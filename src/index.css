@@ -1,0 +1,55 @@
+/* Bridge theme: green (felt), red (suits), black, white */
+:root {
+  --bridge-green: #1b4d3e;
+  --bridge-green-light: #2e6b55;
+  --bridge-green-soft: #e8f2ee;
+  --bridge-red: #b91c1c;
+  --bridge-red-soft: #fef2f2;
+  --bridge-black: #1a1a1a;
+  --bridge-white: #ffffff;
+  --bridge-cream: #faf9f7;
+  --bridge-border: #cbd5c8;
+  --bridge-shadow: rgba(27, 77, 62, 0.12);
+  --bridge-focus: #1b4d3e;
+
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--bridge-black);
+  background: linear-gradient(160deg, var(--bridge-green-soft) 0%, var(--bridge-cream) 50%, #e8ece8 100%);
+  min-height: 100vh;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--bridge-focus);
+  outline-offset: 2px;
+}
+
+input, select {
+  font-family: inherit;
+}
+
+input:focus, select:focus {
+  outline: none;
+}

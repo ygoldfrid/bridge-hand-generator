@@ -1,0 +1,426 @@
+.bridge-hand-generator {
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+/* Header with logo */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--bridge-white);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px var(--bridge-shadow);
+  border-left: 4px solid var(--bridge-green);
+}
+
+.app-logo {
+  flex-shrink: 0;
+}
+
+.app-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.bridge-hand-generator h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--bridge-green);
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  color: var(--bridge-black);
+  opacity: 0.85;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Form card */
+.generator-form {
+  width: 100%;
+  padding: 1.5rem 1.75rem;
+  background: var(--bridge-white);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px var(--bridge-shadow);
+  border: 1px solid var(--bridge-border);
+  box-sizing: border-box;
+}
+
+.generator-form label {
+  display: block;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+  color: var(--bridge-black);
+  font-size: 0.95rem;
+}
+
+.generator-form label input,
+.generator-form label select,
+.generator-form input,
+.generator-form select {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 2px solid var(--bridge-border);
+  background: var(--bridge-cream);
+  color: var(--bridge-black);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.generator-form label input:focus,
+.generator-form label select:focus,
+.generator-form input:focus,
+.generator-form select:focus {
+  border-color: var(--bridge-green);
+  box-shadow: 0 0 0 3px rgba(27, 77, 62, 0.15);
+}
+
+.generator-form .form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.generator-form .form-row label {
+  flex: 1;
+  min-width: 100px;
+}
+
+.generator-form .constraints {
+  margin: 1.25rem 0;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 2px solid var(--bridge-green-soft);
+  background: var(--bridge-green-soft);
+}
+
+.generator-form .hint {
+  font-size: 0.875rem;
+  color: var(--bridge-black);
+  opacity: 0.8;
+  margin: 0 0 0.75rem 0;
+}
+
+.per-hand-hcp,
+.dealer-partner-hcp {
+  margin-top: 0.75rem;
+}
+
+.per-hand-row {
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.hand-label {
+  min-width: 1.5rem;
+  font-weight: 600;
+}
+
+.per-hand-row input {
+  max-width: 6rem;
+  margin-top: 0;
+}
+
+/* Distribution: min cards per suit per player */
+.distribution-section {
+  margin: 1.5rem 0;
+}
+
+.distribution-label {
+  display: block;
+  font-weight: 600;
+  color: var(--bridge-black);
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+}
+
+.distribution-hint {
+  margin-bottom: 0.75rem !important;
+}
+
+.distribution-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem 0;
+  max-width: 52rem;
+}
+
+.distribution-header-row,
+.distribution-minmax-row,
+.distribution-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 1fr 2rem 1fr 1fr 2rem 1fr 1fr 2rem 1fr 1fr;
+  gap: 0.35rem 0.4rem;
+  align-items: center;
+}
+
+.dist-gap {
+  min-width: 0;
+  padding: 0;
+}
+
+.dist-suit-span {
+  grid-column: span 2;
+  text-align: center;
+}
+
+.dist-header-spacer {
+  grid-column: 1;
+}
+
+.dist-minmax-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--bridge-green);
+  text-align: center;
+}
+
+.distribution-header-row .dist-cell,
+.distribution-minmax-row .dist-cell {
+  font-weight: 600;
+  color: var(--bridge-green);
+  font-size: 0.9rem;
+}
+
+.dist-cell {
+  min-width: 0;
+}
+
+.dist-player {
+  font-weight: 600;
+}
+
+.dist-suit {
+  text-align: center;
+  font-size: 1.4rem;
+}
+
+.distribution-header-row .dist-suit-S,
+.distribution-header-row .dist-suit-C {
+  color: var(--bridge-black);
+  font-size: 1.4rem;
+}
+
+.distribution-header-row .dist-suit-H,
+.distribution-header-row .dist-suit-D {
+  color: var(--bridge-red);
+  font-size: 1.4rem;
+}
+
+.dist-input {
+  margin-top: 0 !important;
+  text-align: center;
+  padding: 0.5rem 0.6rem !important;
+  min-width: 3.25rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Dealer + Partner distribution: wider label column, smaller inputs (like HCP per Dealer) */
+.distribution-section--dealer-partner .distribution-header-row,
+.distribution-section--dealer-partner .distribution-minmax-row,
+.distribution-section--dealer-partner .distribution-row {
+  grid-template-columns: 5rem 1fr 1fr 2rem 1fr 1fr 2rem 1fr 1fr 2rem 1fr 1fr;
+  gap: 0.5rem 0.4rem;
+}
+
+.distribution-section--dealer-partner .dist-player {
+  white-space: nowrap;
+}
+
+.distribution-section--dealer-partner .dist-input {
+  min-width: 2.5rem;
+  max-width: 4rem;
+  padding: 0.35rem 0.4rem !important;
+  font-size: 0.95rem;
+}
+
+/* HCP section: grid below the label (same design as Distribution) */
+.hcp-section {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.hcp-hint {
+  margin-bottom: 0.75rem !important;
+}
+
+.hcp-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem 0;
+  max-width: 20rem;
+}
+
+.hcp-header-row,
+.hcp-row {
+  display: grid;
+  grid-template-columns: 5rem 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.hcp-cell {
+  min-width: 0;
+}
+
+.hcp-spacer {
+  grid-column: 1;
+}
+
+.hcp-player {
+  font-weight: 600;
+  color: var(--bridge-black);
+  white-space: nowrap;
+}
+
+.hcp-minmax-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--bridge-green);
+  text-align: center;
+}
+
+.hcp-header-row .hcp-cell {
+  font-weight: 600;
+  color: var(--bridge-green);
+  font-size: 0.9rem;
+}
+
+.hcp-input {
+  margin-top: 0 !important;
+  text-align: center;
+  padding: 0.35rem 0.4rem !important;
+  min-width: 2.5rem;
+  max-width: 4rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid var(--bridge-border);
+  border-radius: 8px;
+  background: var(--bridge-white);
+  font-size: 0.95rem;
+}
+
+.hcp-input:focus {
+  outline: none;
+  border-color: var(--bridge-green);
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  margin-top: 0.5rem;
+  background: var(--bridge-green);
+  color: var(--bridge-white);
+  box-shadow: 0 2px 8px rgba(27, 77, 62, 0.35);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--bridge-green-light);
+  box-shadow: 0 4px 14px rgba(27, 77, 62, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-download {
+  margin-top: 0.75rem;
+  background: var(--bridge-white);
+  color: var(--bridge-green);
+  border: 2px solid var(--bridge-green);
+}
+
+.btn-download:hover {
+  background: var(--bridge-green-soft);
+  box-shadow: 0 2px 10px var(--bridge-shadow);
+}
+
+/* Error */
+.bridge-hand-generator .error {
+  color: var(--bridge-red);
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bridge-red-soft);
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* Result area: wide enough for 4 boards without horizontal scroll */
+.result {
+  margin-top: 1.75rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--bridge-white);
+  border-radius: 16px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px var(--bridge-shadow);
+  border: 1px solid var(--bridge-border);
+  border-left: 4px solid var(--bridge-green);
+  overflow-x: auto;
+}
+
+.result-intro {
+  margin-bottom: 1.25rem;
+  font-size: 1rem;
+  color: var(--bridge-black);
+  font-weight: 500;
+}
+
+/* Boards grid: fixed-width boards; only the number per row changes with window size */
+.boards-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 400px);
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.boards-list > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .bridge-hand-generator {
+    max-width: 1800px;
+  }
+}

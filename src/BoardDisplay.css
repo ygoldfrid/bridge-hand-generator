@@ -1,0 +1,230 @@
+/* Lighter green table for readability; stay inside grid cell */
+.board-display {
+  position: relative;
+  background: #2e6b45;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.board-display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: #3d8b55;
+  color: #fff;
+}
+
+.board-display-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.board-display-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.board-display-delete {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.board-display-delete:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Upper-left vulnerability & dealer square: thick border (red = vulnerable side), board number in center, D on dealer side */
+.board-vuln-square {
+  position: absolute;
+  top: 2.75rem;
+  left: 0.75rem;
+  width: 56px;
+  height: 56px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 5px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+  font-weight: 700;
+  z-index: 1;
+}
+
+.vuln-board-num {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+/* D on the dealer side: sits in the padding band, clear of the center number */
+.vuln-dealer-d {
+  position: absolute;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.vuln-d-n {
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.vuln-d-s {
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.vuln-d-e {
+  right: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.vuln-d-w {
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Vulnerability border: thick red on vulnerable sides for clear visibility */
+.board-vuln-square.vuln-none {
+  border-color: #e2e8f0;
+}
+
+.board-vuln-square.vuln-all {
+  border-color: #c53030;
+}
+
+.board-vuln-square.vuln-ns {
+  border-top-color: #c53030;
+  border-bottom-color: #c53030;
+  border-left-color: #e2e8f0;
+  border-right-color: #e2e8f0;
+}
+
+.board-vuln-square.vuln-ew {
+  border-left-color: #c53030;
+  border-right-color: #c53030;
+  border-top-color: #e2e8f0;
+  border-bottom-color: #e2e8f0;
+}
+
+.board-display-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+    ". north ."
+    "west center east"
+    ". south .";
+  gap: 6px;
+  padding: 1rem;
+  min-height: 280px;
+  min-width: 0;
+  width: 100%;
+}
+
+.board-display-center {
+  grid-area: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  min-width: 64px;
+  min-height: 40px;
+}
+
+.board-display-hand {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  min-width: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.hand-north {
+  grid-area: north;
+}
+
+.hand-south {
+  grid-area: south;
+}
+
+.hand-west {
+  grid-area: west;
+}
+
+.hand-east {
+  grid-area: east;
+}
+
+/* Only dealer gets yellow header */
+.hand-dealer .hand-header {
+  background: #eab308;
+  color: #1a1a1a;
+}
+
+.board-display-hand:not(.hand-dealer) .hand-header {
+  background: #4a5568;
+  color: #fff;
+}
+
+.hand-header {
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px 4px 0 0;
+  margin: -0.4rem -0.5rem 0.4rem -0.5rem;
+}
+
+.hand-suits {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.hand-suit-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.suit-symbol {
+  flex-shrink: 0;
+  width: 1em;
+}
+
+.suit-black {
+  color: #1a1a1a;
+}
+
+.suit-red {
+  color: #b91c1c;
+}
+
+.suit-ranks {
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.02em;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
