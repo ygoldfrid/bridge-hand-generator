@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { generate } from '@bridge-tools/generator'
 import { Hand, Board } from '@bridge-tools/core'
 import { boardsToLinFile } from './lin'
+import { exportBoardsToPdf } from './pdfExport'
 import BoardDisplay from './BoardDisplay'
 import BridgeLogo from './BridgeLogo'
 import './BridgeHandGenerator.css'
@@ -95,6 +96,7 @@ export default function BridgeHandGenerator() {
   const [rearrangeMode, setRearrangeMode] = useState(false)
   const [dragSourceIndex, setDragSourceIndex] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   const getVulnerabilityForNewBoard = (boardNum) => {
     if (vulnMode === 'rotating') return standardVulnerability(boardNum)
@@ -403,6 +405,18 @@ export default function BridgeHandGenerator() {
     if (generatedBoards.length === 0) return
     const content = boardsToLinFile(generatedBoards)
     downloadLin(content, 'bridge_hands.lin')
+  }
+
+  const handleDownloadPdf = async () => {
+    if (generatedBoards.length === 0) return
+    setPdfLoading(true)
+    try {
+      await exportBoardsToPdf(generatedBoards)
+    } catch (e) {
+      setError(e?.message || 'PDF download failed. If using a dev server, ensure /fonts/DejaVuSans.ttf is available.')
+    } finally {
+      setPdfLoading(false)
+    }
   }
 
   return (
@@ -770,6 +784,9 @@ export default function BridgeHandGenerator() {
               <button type="button" onClick={handleDownload} className="btn btn-download">
                 Download LIN file
               </button>
+              <button type="button" onClick={handleDownloadPdf} disabled={pdfLoading} className="btn btn-download">
+                {pdfLoading ? 'Preparing PDF…' : 'Download PDF'}
+              </button>
               <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
                 {rearrangeMode ? 'Done rearranging' : 'Rearrange boards'}
               </button>
@@ -851,6 +868,9 @@ export default function BridgeHandGenerator() {
           <div className="result-actions">
               <button type="button" onClick={handleDownload} className="btn btn-download">
                 Download LIN file
+              </button>
+              <button type="button" onClick={handleDownloadPdf} disabled={pdfLoading} className="btn btn-download">
+                {pdfLoading ? 'Preparing PDF…' : 'Download PDF'}
               </button>
               <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
                 {rearrangeMode ? 'Done rearranging' : 'Rearrange boards'}
