@@ -47,12 +47,39 @@
 /* Form card */
 .generator-form {
   width: 100%;
-  padding: 1.5rem 1.75rem;
+  box-sizing: border-box;
+}
+
+.form-section {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
   background: var(--bridge-white);
   border-radius: 16px;
   box-shadow: 0 4px 20px var(--bridge-shadow);
   border: 1px solid var(--bridge-border);
-  box-sizing: border-box;
+}
+
+.form-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.form-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--bridge-green);
+  margin: 0 0 1rem 0;
+}
+
+.form-section-vulnerability .form-section-title {
+  margin-bottom: 0.75rem;
+}
+
+.form-section-vulnerability label {
+  margin-bottom: 0;
+}
+
+.form-section-vulnerability select {
+  max-width: 14rem;
 }
 
 .generator-form label {
@@ -393,11 +420,63 @@
   overflow-x: auto;
 }
 
+.result-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--bridge-green);
+}
+
 .result-intro {
   margin-bottom: 1.25rem;
   font-size: 1rem;
   color: var(--bridge-black);
   font-weight: 500;
+}
+
+.result-intro.result-empty {
+  opacity: 0.85;
+  margin-bottom: 0;
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.result-actions--top {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.result-actions .btn-clear {
+  margin-top: 0.75rem;
+  margin-left: auto;
+  background: var(--bridge-red);
+  color: var(--bridge-white);
+  border: 2px solid var(--bridge-red);
+}
+
+.result-actions .btn-clear:hover {
+  background: #9a1616;
+  border-color: #9a1616;
+  color: var(--bridge-white);
+  box-shadow: 0 2px 10px var(--bridge-shadow);
+}
+
+.btn-rearrange {
+  margin-top: 0.75rem;
+  background: var(--bridge-white);
+  color: var(--bridge-green);
+  border: 2px solid var(--bridge-green);
+}
+
+.btn-rearrange:hover {
+  background: var(--bridge-green-soft);
+  box-shadow: 0 2px 10px var(--bridge-shadow);
 }
 
 /* Boards grid: fixed-width boards; only the number per row changes with window size */
@@ -417,6 +496,60 @@
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
+}
+
+/* Rearrange mode: draggable board wrappers */
+.board-draggable-wrapper {
+  position: relative;
+  cursor: grab;
+  min-width: 0;
+}
+
+.board-draggable-wrapper:active {
+  cursor: grabbing;
+}
+
+.board-draggable-wrapper.board-dragging {
+  opacity: 0.6;
+}
+
+.board-draggable-wrapper.board-dragging .board-drag-overlay {
+  opacity: 0.9;
+}
+
+.board-drag-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  z-index: 1;
+}
+
+.board-drag-hand-icon {
+  font-size: 3rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.board-draggable-wrapper.board-drop-target {
+  outline: 3px dashed var(--bridge-green);
+  outline-offset: 2px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.board-drop-placeholder {
+  min-height: 280px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.board-draggable-wrapper {
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 @media (min-width: 640px) {

@@ -10,12 +10,16 @@ const COMPASS = ['N', 'S', 'E', 'W']
 const SUITS = ['S', 'H', 'D', 'C']
 const SUIT_LABELS = { S: '♠', H: '♥', D: '♦', C: '♣' }
 
-const VULN_OPTIONS = [
-  { value: 'standard', label: 'Standard (rotates by board)' },
-  { value: 'none', label: 'Always None' },
-  { value: 'ns', label: 'Always N-S' },
-  { value: 'ew', label: 'Always E-W' },
-  { value: 'both', label: 'Always Both' },
+const VULN_MODE_OPTIONS = [
+  { value: 'rotating', label: 'Rotating' },
+  { value: 'fixed', label: 'Fixed (choose per board)' },
+]
+
+const VULN_VALUES = [
+  { value: 'none', label: 'None' },
+  { value: 'ns', label: 'N-S' },
+  { value: 'ew', label: 'E-W' },
+  { value: 'both', label: 'Both' },
 ]
 
 const HCP_MODE_OPTIONS = [
@@ -72,8 +76,9 @@ const emptyDealerDistribution = () =>
   Object.fromEntries(SUITS.map((s) => [s, { min: '', max: '' }]))
 
 export default function BridgeHandGenerator() {
-  const [numBoards, setNumBoards] = useState(8)
-  const [vulnMode, setVulnMode] = useState('standard')
+  const [numBoards, setNumBoards] = useState(3)
+  const [vulnMode, setVulnMode] = useState('rotating')
+  const [defaultFixedVuln, setDefaultFixedVuln] = useState('none')
   const [hcpMode, setHcpMode] = useState('none')
   const [perHandHcp, setPerHandHcp] = useState(emptyPerHand())
   const [dealerHcpMin, setDealerHcpMin] = useState('')
@@ -87,10 +92,13 @@ export default function BridgeHandGenerator() {
   const [generatedBoards, setGeneratedBoards] = useState([])
   const [error, setError] = useState(null)
   const [generating, setGenerating] = useState(false)
+  const [rearrangeMode, setRearrangeMode] = useState(false)
+  const [dragSourceIndex, setDragSourceIndex] = useState(null)
+  const [dragOverIndex, setDragOverIndex] = useState(null)
 
-  const getVulnerability = (boardNum) => {
-    if (vulnMode !== 'standard') return vulnMode
-    return standardVulnerability(boardNum)
+  const getVulnerabilityForNewBoard = (boardNum) => {
+    if (vulnMode === 'rotating') return standardVulnerability(boardNum)
+    return defaultFixedVuln
   }
 
   const updatePerHandHcp = (hand, field, value) => {
@@ -261,10 +269,9 @@ export default function BridgeHandGenerator() {
   const handleGenerate = (e) => {
     e.preventDefault()
     setError(null)
-    setGeneratedBoards([])
     setGenerating(true)
 
-    const num = Math.max(1, Math.min(32, Number(numBoards) || 8))
+    const num = Math.max(1, Math.min(32, Number(numBoards) || 3))
 
     setTimeout(() => {
       try {
@@ -324,11 +331,15 @@ export default function BridgeHandGenerator() {
           deals = generate({ num, filter, maxAttempts })
         }
 
-        const boards = deals.map((deal, i) => {
-          const boardNum = i + 1
-          return { deal, boardNum, vulnerability: getVulnerability(boardNum) }
+        setGeneratedBoards((prev) => {
+          const startNum = prev.length + 1
+          const newBoards = deals.map((deal, i) => ({
+            deal,
+            boardNum: startNum + i,
+            vulnerability: getVulnerabilityForNewBoard(startNum + i),
+          }))
+          return [...prev, ...newBoards]
         })
-        setGeneratedBoards(boards)
       } catch (err) {
         const msg = err.message || ''
         const friendly = msg.includes('Failed to generate a deal within')
@@ -342,7 +353,50 @@ export default function BridgeHandGenerator() {
   }
 
   const handleDeleteBoard = (index) => {
-    setGeneratedBoards((prev) => prev.filter((_, i) => i !== index))
+    setGeneratedBoards((prev) =>
+      prev
+        .filter((_, i) => i !== index)
+        .map((board, i) => ({
+          ...board,
+          boardNum: i + 1,
+          vulnerability: vulnMode === 'rotating' ? standardVulnerability(i + 1) : board.vulnerability,
+        }))
+    )
+  }
+
+  const handleClearAll = () => {
+    setGeneratedBoards([])
+    setRearrangeMode(false)
+    setDragSourceIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const setRearrangeModeWithDrag = (value) => {
+    setRearrangeMode(value)
+    if (!value) {
+      setDragSourceIndex(null)
+      setDragOverIndex(null)
+    }
+  }
+
+  const handleReorderBoards = (sourceIndex, targetIndex) => {
+    if (sourceIndex === targetIndex) return
+    setGeneratedBoards((prev) => {
+      const reordered = [...prev]
+      const [removed] = reordered.splice(sourceIndex, 1)
+      reordered.splice(targetIndex, 0, removed)
+      return reordered.map((board, i) => ({
+        ...board,
+        boardNum: i + 1,
+        vulnerability: vulnMode === 'rotating' ? standardVulnerability(i + 1) : board.vulnerability,
+      }))
+    })
+  }
+
+  const handleSetBoardVulnerability = (index, value) => {
+    setGeneratedBoards((prev) =>
+      prev.map((b, i) => (i === index ? { ...b, vulnerability: value } : b))
+    )
   }
 
   const handleDownload = () => {
@@ -362,27 +416,57 @@ export default function BridgeHandGenerator() {
       </header>
 
       <form onSubmit={handleGenerate} className="generator-form">
+        <section className="form-section form-section-vulnerability" aria-labelledby="vulnerability-section-heading">
+          <h2 id="vulnerability-section-heading" className="form-section-title">Vulnerability</h2>
+          <label>
+            <select
+              value={vulnMode}
+              onChange={(e) => {
+                const next = e.target.value
+                setVulnMode(next)
+                if (next === 'rotating') {
+                  setGeneratedBoards((prev) =>
+                    prev.map((b) => ({ ...b, vulnerability: standardVulnerability(b.boardNum) }))
+                  )
+                }
+              }}
+            >
+              {VULN_MODE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </section>
+
+        <section className="form-section form-section-boards" aria-labelledby="boards-section-heading">
+          <h2 id="boards-section-heading" className="form-section-title">Boards</h2>
+
         <label>
-          Number of boards
+          Boards to add
           <input
             type="number"
             min={1}
             max={32}
             value={numBoards}
             onChange={(e) => setNumBoards(e.target.value)}
+            title="Number of boards to add each time you click the button"
           />
         </label>
 
-        <label>
-          Vulnerability
-          <select value={vulnMode} onChange={(e) => setVulnMode(e.target.value)}>
-            {VULN_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        {vulnMode === 'fixed' && (
+          <label>
+            Vulnerability
+            <select value={defaultFixedVuln} onChange={(e) => setDefaultFixedVuln(e.target.value)}>
+              {VULN_VALUES.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <label>
           HCP conditions
@@ -664,34 +748,120 @@ export default function BridgeHandGenerator() {
         )}
 
         <button type="submit" disabled={generating} className="btn btn-primary">
-          {generating ? 'Generating…' : 'Generate hands'}
+          {generating ? 'Adding…' : `Add ${numBoards} board${numBoards !== 1 ? 's' : ''}`}
         </button>
+        </section>
       </form>
 
       {error && <p className="error">{error}</p>}
 
-      {generatedBoards.length > 0 && (
-        <div className="result">
-          <p className="result-intro">
-            {generatedBoards.length} board(s). Remove any you don’t want, then download.
+      <div className="result">
+        <h2 className="result-title">Preview Boards</h2>
+        {generatedBoards.length === 0 ? (
+          <p className="result-intro result-empty">
+            No boards yet. Set conditions and click &quot;Add boards&quot; to generate. When you have enough, remove any you don&apos;t want and download.
           </p>
-          <div className="boards-list">
-            {generatedBoards.map((board, index) => (
-              <BoardDisplay
-                key={index}
-                deal={board.deal}
-                boardNum={board.boardNum}
-                displayIndex={index + 1}
-                vulnerability={board.vulnerability}
-                onDelete={() => handleDeleteBoard(index)}
-              />
-            ))}
+        ) : (
+          <>
+            <p className="result-intro">
+              {generatedBoards.length} board(s) total. Remove any you don&apos;t want, rearrange the order if needed, then download.
+            </p>
+            <div className="result-actions result-actions--top">
+              <button type="button" onClick={handleDownload} className="btn btn-download">
+                Download LIN file
+              </button>
+              <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
+                {rearrangeMode ? 'Done rearranging' : 'Rearrange boards'}
+              </button>
+              <button type="button" onClick={handleClearAll} className="btn btn-clear">
+                Clear all boards
+              </button>
+            </div>
+            <div className={`boards-list ${rearrangeMode ? 'boards-list--rearrange' : ''}`}>
+            {(() => {
+              const n = generatedBoards.length
+              const identity = Array.from({ length: n }, (_, i) => i)
+              const displayOrder =
+                rearrangeMode && dragSourceIndex != null && dragOverIndex != null && dragSourceIndex !== dragOverIndex
+                  ? (() => {
+                      const a = [...identity]
+                      const [removed] = a.splice(dragSourceIndex, 1)
+                      a.splice(dragOverIndex, 0, removed)
+                      return a
+                    })()
+                  : identity
+
+              return (rearrangeMode ? displayOrder : identity).map((originalIndex, displayPos) => {
+                const board = generatedBoards[originalIndex]
+                const isDropTarget = dragOverIndex === displayPos
+                const boardEl = (
+                  <BoardDisplay
+                    key={originalIndex}
+                    deal={board.deal}
+                    boardNum={board.boardNum}
+                    displayIndex={displayPos + 1}
+                    vulnerability={board.vulnerability}
+                    onDelete={rearrangeMode ? undefined : () => handleDeleteBoard(originalIndex)}
+                    rearrangeMode={rearrangeMode}
+                    staticVulnSelector={vulnMode === 'fixed'}
+                    onVulnerabilityChange={vulnMode === 'fixed' ? (v) => handleSetBoardVulnerability(originalIndex, v) : undefined}
+                  />
+                )
+                if (!rearrangeMode) return boardEl
+                return (
+                  <div
+                    key={originalIndex}
+                    className={`board-draggable-wrapper${isDropTarget ? ' board-drop-target' : ''}`}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', String(originalIndex))
+                      e.dataTransfer.effectAllowed = 'move'
+                      e.currentTarget.classList.add('board-dragging')
+                      setDragSourceIndex(originalIndex)
+                    }}
+                    onDragEnd={(e) => {
+                      e.currentTarget.classList.remove('board-dragging')
+                      setDragSourceIndex(null)
+                      setDragOverIndex(null)
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      e.dataTransfer.dropEffect = 'move'
+                      setDragOverIndex(displayPos)
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10)
+                      const targetIndex = displayPos
+                      if (!isNaN(sourceIndex)) handleReorderBoards(sourceIndex, targetIndex)
+                      setDragSourceIndex(null)
+                      setDragOverIndex(null)
+                    }}
+                    data-board-index={originalIndex}
+                  >
+                    <div className="board-drag-overlay" aria-hidden="true">
+                      <span className="board-drag-hand-icon" role="img" aria-hidden="true">&#128400;</span>
+                    </div>
+                    {isDropTarget ? <div className="board-drop-placeholder" aria-hidden="true" /> : boardEl}
+                  </div>
+                )
+              })
+            })()}
           </div>
-          <button type="button" onClick={handleDownload} className="btn btn-download">
-            Download .lin file
-          </button>
-        </div>
-      )}
+          <div className="result-actions">
+              <button type="button" onClick={handleDownload} className="btn btn-download">
+                Download LIN file
+              </button>
+              <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
+                {rearrangeMode ? 'Done rearranging' : 'Rearrange boards'}
+              </button>
+              <button type="button" onClick={handleClearAll} className="btn btn-clear">
+                Clear all boards
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }

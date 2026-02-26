@@ -1,4 +1,4 @@
-import { Board } from '@bridge-tools/core'
+import { Board, Hand } from '@bridge-tools/core'
 import './BoardDisplay.css'
 
 const SUITS = [
@@ -16,7 +16,14 @@ function handBySuits(hand) {
   return SUITS.map((s) => ({ suit: s, ranks: (bySuit[s.key] || []).join('') }))
 }
 
-export default function BoardDisplay({ deal, boardNum, displayIndex, vulnerability = 'none', onDelete }) {
+const VULN_OPTIONS = [
+  { value: 'none', label: 'None' },
+  { value: 'ns', label: 'N-S' },
+  { value: 'ew', label: 'E-W' },
+  { value: 'both', label: 'Both' },
+]
+
+export default function BoardDisplay({ deal, boardNum, displayIndex, vulnerability = 'none', onDelete, rearrangeMode = false, staticVulnSelector = false, onVulnerabilityChange }) {
   const dealer = Board.calculateDealer(boardNum)
 
   const hands = [
@@ -36,15 +43,32 @@ export default function BoardDisplay({ deal, boardNum, displayIndex, vulnerabili
       <header className="board-display-header">
         <span className="board-display-title">Board {displayIndex}</span>
         <div className="board-display-actions">
-          <button
-            type="button"
-            className="board-display-delete"
-            onClick={onDelete}
-            title="Remove board"
-            aria-label="Remove board"
-          >
-            ×
-          </button>
+          {staticVulnSelector && onVulnerabilityChange && (
+            <select
+              value={vulnerability}
+              onChange={(e) => onVulnerabilityChange(e.target.value)}
+              className="board-display-vuln-select"
+              title="Vulnerability"
+              aria-label="Board vulnerability"
+            >
+              {VULN_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          )}
+          {!rearrangeMode && onDelete && (
+            <button
+              type="button"
+              className="board-display-delete"
+              onClick={onDelete}
+              title="Remove board"
+              aria-label="Remove board"
+            >
+              ×
+            </button>
+          )}
         </div>
       </header>
       <div className={`board-vuln-square ${vulnClass}`}>
@@ -53,10 +77,12 @@ export default function BoardDisplay({ deal, boardNum, displayIndex, vulnerabili
       </div>
       <div className="board-display-table">
         <div className="board-display-center" aria-hidden="true" />
-        {hands.map(({ compass, label, className }) => (
+        {hands.map(({ compass, label, className }) => {
+          const hcp = Hand.countMiltonHCP(deal[compass])
+          return (
           <div key={compass} className={`board-display-hand ${className} ${compass === dealer ? 'hand-dealer' : ''}`}>
             <div className="hand-header">
-              {compass} {label}
+              <span>{label}</span>
             </div>
             <div className="hand-suits">
               {handBySuits(deal[compass]).map(({ suit, ranks }) => (
@@ -70,8 +96,12 @@ export default function BoardDisplay({ deal, boardNum, displayIndex, vulnerabili
                 </div>
               ))}
             </div>
+            <div className="hand-hcp-banner" title="High Card Points">
+              {hcp} HCP
+            </div>
           </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
