@@ -3,6 +3,7 @@ import { generate } from '@bridge-tools/generator'
 import { Hand, Board } from '@bridge-tools/core'
 import { boardsToLinFile } from './lin'
 import { exportBoardsToPdf } from './pdfExport'
+import { CONVENTION_OPTIONS, getConventionFilter } from './conventions'
 import BoardDisplay from './BoardDisplay'
 import BridgeLogo from './BridgeLogo'
 import './BridgeHandGenerator.css'
@@ -80,6 +81,7 @@ export default function BridgeHandGenerator() {
   const [numBoards, setNumBoards] = useState(3)
   const [vulnMode, setVulnMode] = useState('rotating')
   const [defaultFixedVuln, setDefaultFixedVuln] = useState('none')
+  const [convention, setConvention] = useState('none')
   const [hcpMode, setHcpMode] = useState('none')
   const [perHandHcp, setPerHandHcp] = useState(emptyPerHand())
   const [dealerHcpMin, setDealerHcpMin] = useState('')
@@ -279,7 +281,19 @@ export default function BridgeHandGenerator() {
       try {
         let deals
 
-        if (hcpMode === 'dealer_partner') {
+        if (convention !== 'none') {
+          const startNum = generatedBoards.length + 1
+          const maxAttempts = 15000
+          deals = []
+          for (let i = 0; i < num; i++) {
+            const boardNum = startNum + i
+            const dealer = Board.calculateDealer(boardNum)
+            const conventionFilter = getConventionFilter(convention, dealer, getPartner)
+            const filter = conventionFilter || (() => true)
+            const [oneDeal] = generate({ num: 1, filter, maxAttempts })
+            deals.push(oneDeal)
+          }
+        } else if (hcpMode === 'dealer_partner') {
           const dMin = dealerHcpMin === '' ? null : parseInt(dealerHcpMin, 10)
           const dMax = dealerHcpMax === '' ? null : parseInt(dealerHcpMax, 10)
           const pMin = partnerHcpMin === '' ? null : parseInt(partnerHcpMin, 10)
@@ -482,6 +496,23 @@ export default function BridgeHandGenerator() {
           </label>
         )}
 
+        <label>
+          Hand type
+          <select
+            value={convention}
+            onChange={(e) => setConvention(e.target.value)}
+            title="Choose a convention preset or custom HCP & distribution"
+          >
+            {CONVENTION_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {convention === 'none' && (
+          <>
         <label>
           HCP conditions
           <select value={hcpMode} onChange={(e) => handleHcpModeChange(e.target.value)}>
@@ -759,6 +790,8 @@ export default function BridgeHandGenerator() {
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
 
         <button type="submit" disabled={generating} className="btn btn-primary">
