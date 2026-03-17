@@ -79,7 +79,13 @@ function is1NTOpenerHand(hand) {
 
 /** Hand type dropdown: standalone options or { group, options }. */
 export const CONVENTION_OPTIONS = [
-  { value: 'none', label: 'Custom (HCP & distribution)' },
+  {
+    group: 'Custom',
+    options: [
+      { value: 'none', label: 'Custom' },
+    ],
+  },
+  
   {
     group: '1NT & Responses',
     options: [
@@ -93,7 +99,13 @@ export const CONVENTION_OPTIONS = [
       { value: 'texas_transfer_spades', label: 'Texas transfer to \u2660 (9+ HCP, 6+ \u2660)' },
     ],
   },
-  { value: 'michaels', label: 'Michaels (opener 12+ HCP; cue-bidder 7+ HCP, 5-5 two suiter)' },
+  {
+    group: 'Cue bids',
+    options: [
+      { value: 'michaels', label: 'Michaels (7+ HCP, 5-5 two suiter)' },
+    ],
+  },
+  
 ]
 
 /**

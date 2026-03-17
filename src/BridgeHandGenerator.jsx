@@ -439,37 +439,13 @@ export default function BridgeHandGenerator() {
         <BridgeLogo className="app-logo" size={52} />
         <div className="app-header-text">
           <h1>Bridge Hand Generator</h1>
-          <p className="subtitle">Prepare hands for your classes and download a LIN file for BBO.</p>
+          <p className="subtitle">Finally, a place to generate the hands you want for your classes. Use them in BBO or in print.</p>
         </div>
       </header>
 
       <form onSubmit={handleGenerate} className="generator-form">
-        <section className="form-section form-section-vulnerability" aria-labelledby="vulnerability-section-heading">
-          <h2 id="vulnerability-section-heading" className="form-section-title">Vulnerability</h2>
-          <label>
-            <select
-              value={vulnMode}
-              onChange={(e) => {
-                const next = e.target.value
-                setVulnMode(next)
-                if (next === 'rotating') {
-                  setGeneratedBoards((prev) =>
-                    prev.map((b) => ({ ...b, vulnerability: standardVulnerability(b.boardNum) }))
-                  )
-                }
-              }}
-            >
-              {VULN_MODE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </section>
-
         <section className="form-section form-section-boards" aria-labelledby="boards-section-heading">
-          <h2 id="boards-section-heading" className="form-section-title">Boards</h2>
+          <h2 id="boards-section-heading" className="form-section-title">Add boards</h2>
 
         <label>
           Boards to add
@@ -482,19 +458,6 @@ export default function BridgeHandGenerator() {
             title="Number of boards to add each time you click the button"
           />
         </label>
-
-        {vulnMode === 'fixed' && (
-          <label>
-            Vulnerability
-            <select value={defaultFixedVuln} onChange={(e) => setDefaultFixedVuln(e.target.value)}>
-              {VULN_VALUES.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
 
         <label>
           Hand type
@@ -802,6 +765,41 @@ export default function BridgeHandGenerator() {
           </div>
         )}
           </>
+        )}
+
+        <label>
+          Vulnerability
+          <select
+            value={vulnMode}
+            onChange={(e) => {
+              const next = e.target.value
+              setVulnMode(next)
+              if (next === 'rotating') {
+                setGeneratedBoards((prev) =>
+                  prev.map((b) => ({ ...b, vulnerability: standardVulnerability(b.boardNum) }))
+                )
+              }
+            }}
+          >
+            {VULN_MODE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {vulnMode === 'fixed' && (
+          <label>
+            Vulnerability
+            <select value={defaultFixedVuln} onChange={(e) => setDefaultFixedVuln(e.target.value)}>
+              {VULN_VALUES.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
 
         <button type="submit" disabled={generating} className="btn btn-primary">
