@@ -42,7 +42,7 @@ HCP and distribution filters are applied together. Very tight constraints (e.g. 
   - **Delete** (×) to remove that board (when not in rearrange mode).
   - **Per-board vulnerability** — When vulnerability is **Fixed**, a dropdown on each board lets you set None, N-S, E-W, or Both for that board.
 
-- **Download LIN file** — Builds a LIN file from the current board list (renumbered 1, 2, 3…) and downloads it (e.g. for BBO).
+- **Download LIN** — Builds a LIN file from the current board list (renumbered 1, 2, 3…) and downloads it (e.g. for BBO).
 - **Rearrange boards** — Toggles rearrange mode. In this mode you can **drag and drop** boards to reorder them. Other boards move as you drag; the drop target appears as an empty white slot. When you finish, click **Done rearranging**. Board numbers and dealer/vulnerability (in Rotating mode) are updated after reorder and after delete.
 - **Clear all boards** — Removes all boards and exits rearrange mode (red button, right-aligned).
 

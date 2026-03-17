@@ -503,11 +503,21 @@ export default function BridgeHandGenerator() {
             onChange={(e) => setConvention(e.target.value)}
             title="Choose a convention preset or custom HCP & distribution"
           >
-            {CONVENTION_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            {CONVENTION_OPTIONS.map((item) =>
+              item.group ? (
+                <optgroup key={item.group} label={item.group}>
+                  {item.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              )
+            )}
           </select>
         </label>
 
@@ -815,7 +825,7 @@ export default function BridgeHandGenerator() {
             </p>
             <div className="result-actions result-actions--top">
               <button type="button" onClick={handleDownload} className="btn btn-download">
-                Download LIN file
+                Download LIN
               </button>
               <button type="button" onClick={handleDownloadPdf} disabled={pdfLoading} className="btn btn-download">
                 {pdfLoading ? 'Preparing PDF…' : 'Download PDF'}
@@ -900,7 +910,7 @@ export default function BridgeHandGenerator() {
           </div>
           <div className="result-actions">
               <button type="button" onClick={handleDownload} className="btn btn-download">
-                Download LIN file
+                Download LIN
               </button>
               <button type="button" onClick={handleDownloadPdf} disabled={pdfLoading} className="btn btn-download">
                 {pdfLoading ? 'Preparing PDF…' : 'Download PDF'}

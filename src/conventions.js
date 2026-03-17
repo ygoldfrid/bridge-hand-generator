@@ -17,25 +17,6 @@ function getLHO(dealer) {
   return 'N'
 }
 
-/** Rotation order starting from dealer: dealer, LHO, then LHO of LHO, then LHO^3. */
-function rotationOrder(dealer) {
-  const o = []
-  let seat = dealer
-  for (let i = 0; i < 4; i++) {
-    o.push(seat)
-    seat = getLHO(seat)
-  }
-  return o
-}
-
-/** First player in rotation who has 12+ HCP and can open (5+ major or 4+ minor), or null. */
-function findOpener(deal, dealer) {
-  for (const seat of rotationOrder(dealer)) {
-    if (dealerCanOpen(deal[seat])) return seat
-  }
-  return null
-}
-
 /** Dealer has an opener: 12+ HCP and can open 1 of a suit (5+ major or 4+ minor). */
 function dealerCanOpen(hand) {
   if (Hand.countMiltonHCP(hand) < MIN_OPENING_HCP) return false
@@ -96,10 +77,23 @@ function is1NTOpenerHand(hand) {
   return isBalanced(hand)
 }
 
+/** Hand type dropdown: standalone options or { group, options }. */
 export const CONVENTION_OPTIONS = [
   { value: 'none', label: 'Custom (HCP & distribution)' },
-  { value: '1nt', label: '1NT opener' },
-  { value: 'michaels', label: 'Michaels (opener + cue-bidder)' },
+  {
+    group: '1NT & Responses',
+    options: [
+      { value: '1nt', label: '1NT opener (15–17 HCP, balanced)' },
+      { value: 'stayman', label: 'Stayman (8+ HCP, 4+ in a major)' },
+      { value: 'transfer_clubs', label: 'Transfer to \u2663 (6+ \u2663, 0–7 HCP)' },
+      { value: 'transfer_diamonds', label: 'Transfer to \u2666 (6+ \u2666, 0–7 HCP)' },
+      { value: 'jacoby_transfer_hearts', label: 'Jacoby transfer to \u2665 (5+ \u2665)' },
+      { value: 'jacoby_transfer_spades', label: 'Jacoby transfer to \u2660 (5+ \u2660)' },
+      { value: 'texas_transfer_hearts', label: 'Texas transfer to \u2665 (9+ HCP, 6+ \u2665)' },
+      { value: 'texas_transfer_spades', label: 'Texas transfer to \u2660 (9+ HCP, 6+ \u2660)' },
+    ],
+  },
+  { value: 'michaels', label: 'Michaels (opener 12+ HCP; cue-bidder 7+ HCP, 5-5 two suiter)' },
 ]
 
 /**
@@ -113,10 +107,9 @@ export function getConventionFilter(conventionId, dealer, getPartner) {
   if (conventionId === 'michaels') {
     const minMichaelsHCP = 7
     return (deal) => {
-      const opener = findOpener(deal, dealer)
-      if (opener == null) return false
-      const openerHand = deal[opener]
-      const lho = getLHO(opener)
+      const openerHand = deal[dealer]
+      if (!dealerCanOpen(openerHand)) return false
+      const lho = getLHO(dealer)
       const lhoHand = deal[lho]
       if (Hand.countMiltonHCP(lhoHand) < minMichaelsHCP) return false
       const openingSuit = dealerOpeningSuit(openerHand)
@@ -125,10 +118,77 @@ export function getConventionFilter(conventionId, dealer, getPartner) {
   }
 
   if (conventionId === '1nt') {
+    return (deal) => is1NTOpenerHand(deal[dealer])
+  }
+
+  if (conventionId === 'stayman') {
+    const minStaymanHCP = 8
     return (deal) => {
-      const opener = findOpener(deal, dealer)
-      if (opener == null) return false
-      return is1NTOpenerHand(deal[opener])
+      if (!is1NTOpenerHand(deal[dealer])) return false
+      const partner = getPartner(dealer)
+      const hand = deal[partner]
+      if (Hand.countMiltonHCP(hand) < minStaymanHCP) return false
+      return Hand.countSuit(hand, 'S') >= 4 || Hand.countSuit(hand, 'H') >= 4
+    }
+  }
+
+  if (conventionId === 'jacoby_transfer_spades') {
+    return (deal) => {
+      if (!is1NTOpenerHand(deal[dealer])) return false
+      const partner = getPartner(dealer)
+      return Hand.countSuit(deal[partner], 'S') >= 5
+    }
+  }
+
+  if (conventionId === 'jacoby_transfer_hearts') {
+    return (deal) => {
+      if (!is1NTOpenerHand(deal[dealer])) return false
+      const partner = getPartner(dealer)
+      return Hand.countSuit(deal[partner], 'H') >= 5
+    }
+  }
+
+  const TRANSFER_MINOR_MIN_HCP = 0
+  const TRANSFER_MINOR_MAX_HCP = 7
+
+  if (conventionId === 'transfer_clubs') {
+    return (deal) => {
+      if (!is1NTOpenerHand(deal[dealer])) return false
+      const partner = getPartner(dealer)
+      const hand = deal[partner]
+      const hcp = Hand.countMiltonHCP(hand)
+      return Hand.countSuit(hand, 'C') >= 6 && hcp >= TRANSFER_MINOR_MIN_HCP && hcp <= TRANSFER_MINOR_MAX_HCP
+    }
+  }
+
+  if (conventionId === 'transfer_diamonds') {
+    return (deal) => {
+      if (!is1NTOpenerHand(deal[dealer])) return false
+      const partner = getPartner(dealer)
+      const hand = deal[partner]
+      const hcp = Hand.countMiltonHCP(hand)
+      return Hand.countSuit(hand, 'D') >= 6 && hcp >= TRANSFER_MINOR_MIN_HCP && hcp <= TRANSFER_MINOR_MAX_HCP
+    }
+  }
+
+  const MIN_TEXAS_HCP = 9
+  const MIN_TEXAS_SUIT = 6
+
+  if (conventionId === 'texas_transfer_hearts') {
+    return (deal) => {
+      if (!is1NTOpenerHand(deal[dealer])) return false
+      const partner = getPartner(dealer)
+      const hand = deal[partner]
+      return Hand.countMiltonHCP(hand) >= MIN_TEXAS_HCP && Hand.countSuit(hand, 'H') >= MIN_TEXAS_SUIT
+    }
+  }
+
+  if (conventionId === 'texas_transfer_spades') {
+    return (deal) => {
+      if (!is1NTOpenerHand(deal[dealer])) return false
+      const partner = getPartner(dealer)
+      const hand = deal[partner]
+      return Hand.countMiltonHCP(hand) >= MIN_TEXAS_HCP && Hand.countSuit(hand, 'S') >= MIN_TEXAS_SUIT
     }
   }
 
