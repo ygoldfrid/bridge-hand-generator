@@ -23,7 +23,7 @@ const VULN_OPTIONS = [
   { value: 'both', label: 'Both' },
 ]
 
-export default function BoardDisplay({ deal, boardNum, displayIndex, vulnerability = 'none', onDelete, rearrangeMode = false, staticVulnSelector = false, onVulnerabilityChange }) {
+export default function BoardDisplay({ deal, boardNum, displayIndex, handTypeLabel, vulnerability = 'none', onDelete, rearrangeMode = false, staticVulnSelector = false, onVulnerabilityChange }) {
   const dealer = Board.calculateDealer(boardNum)
 
   const hands = [
@@ -41,7 +41,9 @@ export default function BoardDisplay({ deal, boardNum, displayIndex, vulnerabili
   return (
     <div className="board-display">
       <header className="board-display-header">
-        <span className="board-display-title">Board {displayIndex}</span>
+        <span className="board-display-title">
+          Board {displayIndex}{handTypeLabel ? ` - ${handTypeLabel}` : ''}
+        </span>
         <div className="board-display-actions">
           {staticVulnSelector && onVulnerabilityChange && (
             <select

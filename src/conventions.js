@@ -108,6 +108,26 @@ export const CONVENTION_OPTIONS = [
   
 ]
 
+/** Returns the full display label for a hand type value (e.g. 'michaels' → 'Michaels (7+ HCP, 5-5 two suiter)'). */
+export function getHandTypeLabel(value) {
+  if (value == null) return null
+  for (const item of CONVENTION_OPTIONS) {
+    if (item.options) {
+      const opt = item.options.find((o) => o.value === value)
+      if (opt) return opt.label
+    }
+  }
+  return null
+}
+
+/** Returns the short name (before parenthesis) for board titles, e.g. 'stayman' → 'Stayman'. */
+export function getHandTypeShortLabel(value) {
+  const full = getHandTypeLabel(value)
+  if (full == null) return null
+  const paren = full.indexOf(' (')
+  return paren >= 0 ? full.slice(0, paren) : full
+}
+
 /**
  * Returns a filter function for the given convention, or null if none.
  * The filter receives (deal) and returns true if the deal satisfies the convention

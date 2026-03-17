@@ -3,7 +3,7 @@ import { generate } from '@bridge-tools/generator'
 import { Hand, Board } from '@bridge-tools/core'
 import { boardsToLinFile } from './lin'
 import { exportBoardsToPdf } from './pdfExport'
-import { CONVENTION_OPTIONS, getConventionFilter } from './conventions'
+import { CONVENTION_OPTIONS, getConventionFilter, getHandTypeShortLabel } from './conventions'
 import BoardDisplay from './BoardDisplay'
 import BridgeLogo from './BridgeLogo'
 import './BridgeHandGenerator.css'
@@ -353,6 +353,7 @@ export default function BridgeHandGenerator() {
             deal,
             boardNum: startNum + i,
             vulnerability: getVulnerabilityForNewBoard(startNum + i),
+            handType: convention,
           }))
           return [...prev, ...newBoards]
         })
@@ -858,6 +859,7 @@ export default function BridgeHandGenerator() {
                     deal={board.deal}
                     boardNum={board.boardNum}
                     displayIndex={displayPos + 1}
+                    handTypeLabel={getHandTypeShortLabel(board.handType)}
                     vulnerability={board.vulnerability}
                     onDelete={rearrangeMode ? undefined : () => handleDeleteBoard(originalIndex)}
                     rearrangeMode={rearrangeMode}
