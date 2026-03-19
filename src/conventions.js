@@ -105,7 +105,19 @@ export const CONVENTION_OPTIONS = [
       { value: 'michaels', label: 'Michaels (7+ HCP, 5-5 two suiter)' },
     ],
   },
-  
+  {
+    group: 'Slam Bidding',
+    options: [
+      { value: 'blackwood', label: 'Blackwood (30+ HCP combined; 8+ card fit)' },
+    ],
+  },
+  {
+    group: 'Weak Bids',
+    options: [
+      { value: 'preempt_2', label: '2-level preemptive (5–10 HCP; 6\u2666, 6\u2665, or 6\u2660)' },
+      { value: 'preempt_3', label: '3-level preemptive (5–10 HCP; 6+ \u2663, 7+ \u2666, 7+ \u2665, or 7+ \u2660)' },
+    ],
+  },
 ]
 
 /** Returns the full display label for a hand type value (e.g. 'michaels' → 'Michaels (7+ HCP, 5-5 two suiter)'). */
@@ -221,6 +233,57 @@ export function getConventionFilter(conventionId, dealer, getPartner) {
       const partner = getPartner(dealer)
       const hand = deal[partner]
       return Hand.countMiltonHCP(hand) >= MIN_TEXAS_HCP && Hand.countSuit(hand, 'S') >= MIN_TEXAS_SUIT
+    }
+  }
+
+  const BLACKWOOD_MIN_OPENER_HCP = 12
+  const BLACKWOOD_MIN_COMBINED_HCP = 30
+  const BLACKWOOD_MIN_FIT = 8
+
+  if (conventionId === 'blackwood') {
+    return (deal) => {
+      const openerHand = deal[dealer]
+      const partnerHand = deal[getPartner(dealer)]
+      if (Hand.countMiltonHCP(openerHand) < BLACKWOOD_MIN_OPENER_HCP) return false
+      const combinedHCP = Hand.countMiltonHCP(openerHand) + Hand.countMiltonHCP(partnerHand)
+      if (combinedHCP < BLACKWOOD_MIN_COMBINED_HCP) return false
+      const hasFit = SUITS.some(
+        (s) => Hand.countSuit(openerHand, s) + Hand.countSuit(partnerHand, s) >= BLACKWOOD_MIN_FIT
+      )
+      return hasFit
+    }
+  }
+
+  const PREEMPT_2_MIN_HCP = 5
+  const PREEMPT_2_MAX_HCP = 10
+  const PREEMPT_2_EXACT_SUIT = 6
+  const PREEMPT_2_SUITS = ['S', 'H', 'D']
+
+  if (conventionId === 'preempt_2') {
+    return (deal) => {
+      const hand = deal[dealer]
+      const hcp = Hand.countMiltonHCP(hand)
+      if (hcp < PREEMPT_2_MIN_HCP || hcp > PREEMPT_2_MAX_HCP) return false
+      const hasExactlySixInNonClub = PREEMPT_2_SUITS.some((s) => Hand.countSuit(hand, s) === PREEMPT_2_EXACT_SUIT)
+      return hasExactlySixInNonClub
+    }
+  }
+
+  const PREEMPT_3_MIN_HCP = 5
+  const PREEMPT_3_MAX_HCP = 10
+  const PREEMPT_3_MAJOR_MIN = 7
+  const PREEMPT_3_CLUB_MIN = 6
+
+  if (conventionId === 'preempt_3') {
+    return (deal) => {
+      const hand = deal[dealer]
+      const hcp = Hand.countMiltonHCP(hand)
+      if (hcp < PREEMPT_3_MIN_HCP || hcp > PREEMPT_3_MAX_HCP) return false
+      const has7InSHD = Hand.countSuit(hand, 'S') >= PREEMPT_3_MAJOR_MIN ||
+        Hand.countSuit(hand, 'H') >= PREEMPT_3_MAJOR_MIN ||
+        Hand.countSuit(hand, 'D') >= PREEMPT_3_MAJOR_MIN
+      const has6InClubs = Hand.countSuit(hand, 'C') >= PREEMPT_3_CLUB_MIN
+      return has7InSHD || has6InClubs
     }
   }
 

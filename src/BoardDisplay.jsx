@@ -92,7 +92,7 @@ export default function BoardDisplay({ deal, boardNum, displayIndex, handTypeLab
                   <span className={`suit-symbol ${suit.red ? 'suit-red' : 'suit-black'}`}>
                     {suit.symbol}
                   </span>
-                  <span className={`suit-ranks ${suit.red ? 'suit-red' : 'suit-black'}`}>
+                  <span className="suit-ranks">
                     {ranks || '—'}
                   </span>
                 </div>
