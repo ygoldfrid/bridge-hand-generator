@@ -43,6 +43,11 @@ function dealerOpeningSuit(hand) {
   return 'C'
 }
 
+/** LHO can overcall in `suit` with a five-card suit (Negative Double preset). */
+function lhoCanOvercallInSuit(lhoHand, suit) {
+  return Hand.countSuit(lhoHand, suit) >= 5
+}
+
 /**
  * LHO has Michaels shape for the given opening suit:
  * - If opener opened a major (1♥ or 1♠): LHO has 5 in the other major and 5 in a minor.
@@ -125,9 +130,16 @@ export const CONVENTION_OPTIONS = [
     group: 'Game Force',
     options: [
       { value: 'two_over_one', label: '2 over 1 (opener opens major; responder 12+ HCP)' },
-      { value: 'new_minor_forcing', label: 'New Minor Forcing (opener 12–14 HCP balanced; responder 12+ HCP)' },
-      { value: 'fourth_suit_forcing', label: '4th Suit Forcing (opener not balanced; responder 12+ HCP)' },
+      { value: 'new_minor_forcing', label: 'New Minor forcing (opener 12–14 HCP balanced; responder 12+ HCP)' },
+      { value: 'fourth_suit_forcing', label: '4th Suit forcing (opener not balanced; responder 12+ HCP)' },
       { value: 'reverse', label: 'Reverse (opener 17–19 HCP, not balanced, opens minor; responder 6+ HCP, 4+ in a major)' },
+    ],
+  },
+  {
+    group: 'Support Bids',
+    options: [
+      { value: 'jacoby_2nt', label: 'Jacoby 2NT (12+ HCP; 4+ support)' },
+      { value: 'splinter', label: 'Splinter (8–12 HCP; 4+ support, void or singleton)' },
     ],
   },
   {
@@ -138,21 +150,17 @@ export const CONVENTION_OPTIONS = [
     ],
   },
   {
-    group: 'Cue Bids',
+    group: 'Competitive Bids',
     options: [
       { value: 'michaels', label: 'Michaels (7+ HCP; 5-5 two suiter)' },
-    ],
-  },
-  {
-    group: 'Doubling',
-    options: [
       { value: 'takeout_double', label: 'Takeout Double (11+ HCP; 3+ in unbid suits)' },
+      { value: 'negative_double', label: 'Negative Double (7+ HCP, 4+ in unbid suits)' },
     ],
   },
   {
     group: 'Slam Bids',
     options: [
-      { value: 'blackwood', label: 'Blackwood (30+ HCP combined; 8+ card fit)' },
+      { value: 'blackwood', label: 'Blackwood (30+ HCP combined; fit)' },
     ],
   },
 ]
@@ -321,6 +329,35 @@ export function getConventionFilter(conventionId, dealer, getPartner) {
     }
   }
 
+  const NEGATIVE_DOUBLE_RESPONDER_MIN_HCP = 7
+  const NEGATIVE_DOUBLE_MIN_IN_UNBID = 4
+  const NEGATIVE_DOUBLE_LHO_MIN_HCP = 9
+
+  if (conventionId === 'negative_double') {
+    return (deal) => {
+      const openerHand = deal[dealer]
+      if (!dealerCanOpen(openerHand)) return false
+      const openingSuit = dealerOpeningSuit(openerHand)
+      const lho = getLHO(dealer)
+      const lhoHand = deal[lho]
+      if (Hand.countMiltonHCP(lhoHand) < NEGATIVE_DOUBLE_LHO_MIN_HCP) return false
+      const partner = getPartner(dealer)
+      const responderHand = deal[partner]
+      if (Hand.countMiltonHCP(responderHand) < NEGATIVE_DOUBLE_RESPONDER_MIN_HCP) return false
+
+      const overcallSuits = SUITS.filter((s) => s !== openingSuit)
+      for (const overcallSuit of overcallSuits) {
+        if (!lhoCanOvercallInSuit(lhoHand, overcallSuit)) continue
+        const unbidSuits = SUITS.filter((s) => s !== openingSuit && s !== overcallSuit)
+        const partnerHasLengthInUnbid = unbidSuits.every(
+          (s) => Hand.countSuit(responderHand, s) >= NEGATIVE_DOUBLE_MIN_IN_UNBID
+        )
+        if (partnerHasLengthInUnbid) return true
+      }
+      return false
+    }
+  }
+
   const TWO_OVER_ONE_MIN_HCP = 12
 
   if (conventionId === 'two_over_one') {
@@ -331,6 +368,46 @@ export function getConventionFilter(conventionId, dealer, getPartner) {
       if (!hasMajor) return false
       const partner = getPartner(dealer)
       if (Hand.countMiltonHCP(deal[partner]) < TWO_OVER_ONE_MIN_HCP) return false
+      return true
+    }
+  }
+
+  const JACOBY_2NT_MIN_HCP = 12
+  const JACOBY_2NT_SUPPORT_MAJOR = 4
+
+  if (conventionId === 'jacoby_2nt') {
+    return (deal) => {
+      const openerHand = deal[dealer]
+      if (Hand.countMiltonHCP(openerHand) < JACOBY_2NT_MIN_HCP) return false
+      const openingSuit = dealerOpeningSuit(openerHand)
+      if (openingSuit !== 'H' && openingSuit !== 'S') return false
+      const partner = getPartner(dealer)
+      const responderHand = deal[partner]
+      if (Hand.countMiltonHCP(responderHand) < JACOBY_2NT_MIN_HCP) return false
+      if (Hand.countSuit(responderHand, openingSuit) < JACOBY_2NT_SUPPORT_MAJOR) return false
+      return true
+    }
+  }
+
+  const SPLINTER_OPENER_MIN_HCP = 12
+  const SPLINTER_RESPONDER_MIN_HCP = 8
+  const SPLINTER_RESPONDER_MAX_HCP = 12
+  const SPLINTER_SUPPORT_MAJOR = 4
+
+  if (conventionId === 'splinter') {
+    return (deal) => {
+      const openerHand = deal[dealer]
+      if (Hand.countMiltonHCP(openerHand) < SPLINTER_OPENER_MIN_HCP) return false
+      const openingSuit = dealerOpeningSuit(openerHand)
+      if (openingSuit !== 'H' && openingSuit !== 'S') return false
+      const partner = getPartner(dealer)
+      const responderHand = deal[partner]
+      const rHcp = Hand.countMiltonHCP(responderHand)
+      if (rHcp < SPLINTER_RESPONDER_MIN_HCP || rHcp > SPLINTER_RESPONDER_MAX_HCP) return false
+      if (Hand.countSuit(responderHand, openingSuit) < SPLINTER_SUPPORT_MAJOR) return false
+      const sideSuits = SUITS.filter((s) => s !== openingSuit)
+      const hasVoidOrSingleton = sideSuits.some((s) => Hand.countSuit(responderHand, s) <= 1)
+      if (!hasVoidOrSingleton) return false
       return true
     }
   }
