@@ -84,6 +84,24 @@ function isBalanced12to14(hand) {
   return isBalanced(hand)
 }
 
+/**
+ * After 1m, which major responder would bid with 4+ (standard: longer major; 4-4 → 1♥).
+ */
+function reverseResponderShownMajor(hand) {
+  const s = Hand.countSuit(hand, 'S')
+  const h = Hand.countSuit(hand, 'H')
+  const hOk = h >= 4
+  const sOk = s >= 4
+  if (hOk && !sOk) return 'H'
+  if (sOk && !hOk) return 'S'
+  if (hOk && sOk) {
+    if (h > s) return 'H'
+    if (s > h) return 'S'
+    return 'H'
+  }
+  return null
+}
+
 /** Hand type dropdown: standalone options or { group, options }. */
 export const CONVENTION_OPTIONS = [
   {
@@ -106,9 +124,10 @@ export const CONVENTION_OPTIONS = [
   {
     group: 'Game Force',
     options: [
-      { value: 'two_over_one', label: '2 over 1 (opener 1\u2665 or 1\u2660; responder 12+ HCP)' },
+      { value: 'two_over_one', label: '2 over 1 (opener opens major; responder 12+ HCP)' },
       { value: 'new_minor_forcing', label: 'New Minor Forcing (opener 12–14 HCP balanced; responder 12+ HCP)' },
       { value: 'fourth_suit_forcing', label: '4th Suit Forcing (opener not balanced; responder 12+ HCP)' },
+      { value: 'reverse', label: 'Reverse (opener 17–19 HCP, not balanced, opens minor; responder 6+ HCP, 4+ in a major)' },
     ],
   },
   {
@@ -349,6 +368,41 @@ export function getConventionFilter(conventionId, dealer, getPartner) {
       if (isBalanced(openerHand)) return false
       const partner = getPartner(dealer)
       if (Hand.countMiltonHCP(deal[partner]) < FOURTH_SUIT_MIN_HCP) return false
+      return true
+    }
+  }
+
+  const REVERSE_MIN_OPENER_HCP = 17
+  const REVERSE_MAX_OPENER_HCP = 19
+  const REVERSE_MAX_MAJOR = 4
+  const REVERSE_MIN_RESPONDER_HCP = 6
+
+  if (conventionId === 'reverse') {
+    const REVERSE_MIN_MAJOR_RESPONSE = 4
+    const REVERSE_MAX_OPENER_IN_RESPONDER_MAJOR = 3
+    const REVERSE_MIN_OPENER_OTHER_MAJOR = 4
+    const REVERSE_MIN_MINOR_LENGTH = 4
+    return (deal) => {
+      const openerHand = deal[dealer]
+      const openerHcp = Hand.countMiltonHCP(openerHand)
+      if (openerHcp < REVERSE_MIN_OPENER_HCP || openerHcp > REVERSE_MAX_OPENER_HCP) return false
+      if (isBalanced(openerHand)) return false
+      if (Hand.countSuit(openerHand, 'S') > REVERSE_MAX_MAJOR) return false
+      if (Hand.countSuit(openerHand, 'H') > REVERSE_MAX_MAJOR) return false
+      const openerClubs = Hand.countSuit(openerHand, 'C')
+      const openerDiamonds = Hand.countSuit(openerHand, 'D')
+      if (openerClubs < REVERSE_MIN_MINOR_LENGTH && openerDiamonds < REVERSE_MIN_MINOR_LENGTH) return false
+      const partner = getPartner(dealer)
+      const responderHand = deal[partner]
+      if (Hand.countMiltonHCP(responderHand) < REVERSE_MIN_RESPONDER_HCP) return false
+      const responderSpades = Hand.countSuit(responderHand, 'S')
+      const responderHearts = Hand.countSuit(responderHand, 'H')
+      if (responderSpades < REVERSE_MIN_MAJOR_RESPONSE && responderHearts < REVERSE_MIN_MAJOR_RESPONSE) return false
+      const shownMajor = reverseResponderShownMajor(responderHand)
+      if (shownMajor == null) return false
+      if (Hand.countSuit(openerHand, shownMajor) > REVERSE_MAX_OPENER_IN_RESPONDER_MAJOR) return false
+      const otherMajor = shownMajor === 'H' ? 'S' : 'H'
+      if (Hand.countSuit(openerHand, otherMajor) < REVERSE_MIN_OPENER_OTHER_MAJOR) return false
       return true
     }
   }
