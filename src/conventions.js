@@ -77,6 +77,13 @@ function is1NTOpenerHand(hand) {
   return isBalanced(hand)
 }
 
+/** 12–14 HCP, balanced (e.g. opens 1♣/1♦/1♥, then rebids 1NT). */
+function isBalanced12to14(hand) {
+  const hcp = Hand.countMiltonHCP(hand)
+  if (hcp < 12 || hcp > 14) return false
+  return isBalanced(hand)
+}
+
 /** Hand type dropdown: standalone options or { group, options }. */
 export const CONVENTION_OPTIONS = [
   {
@@ -97,15 +104,11 @@ export const CONVENTION_OPTIONS = [
     ],
   },
   {
-    group: 'Cue Bids',
+    group: 'Game Force',
     options: [
-      { value: 'michaels', label: 'Michaels (7+ HCP; 5-5 two suiter)' },
-    ],
-  },
-  {
-    group: 'Slam Bids',
-    options: [
-      { value: 'blackwood', label: 'Blackwood (30+ HCP combined; 8+ card fit)' },
+      { value: 'two_over_one', label: '2 over 1 (opener 1\u2665 or 1\u2660; responder 12+ HCP)' },
+      { value: 'new_minor_forcing', label: 'New Minor Forcing (opener 12–14 HCP balanced; responder 12+ HCP)' },
+      { value: 'fourth_suit_forcing', label: '4th Suit Forcing (opener not balanced; responder 12+ HCP)' },
     ],
   },
   {
@@ -116,9 +119,21 @@ export const CONVENTION_OPTIONS = [
     ],
   },
   {
+    group: 'Cue Bids',
+    options: [
+      { value: 'michaels', label: 'Michaels (7+ HCP; 5-5 two suiter)' },
+    ],
+  },
+  {
     group: 'Doubling',
     options: [
       { value: 'takeout_double', label: 'Takeout Double (11+ HCP; 3+ in unbid suits)' },
+    ],
+  },
+  {
+    group: 'Slam Bids',
+    options: [
+      { value: 'blackwood', label: 'Blackwood (30+ HCP combined; 8+ card fit)' },
     ],
   },
 ]
@@ -284,6 +299,57 @@ export function getConventionFilter(conventionId, dealer, getPartner) {
         (s) => Hand.countSuit(lhoHand, s) >= TAKEOUT_DOUBLE_MIN_IN_UNBID
       )
       return has3InAllUnbid
+    }
+  }
+
+  const TWO_OVER_ONE_MIN_HCP = 12
+
+  if (conventionId === 'two_over_one') {
+    return (deal) => {
+      const openerHand = deal[dealer]
+      if (Hand.countMiltonHCP(openerHand) < TWO_OVER_ONE_MIN_HCP) return false
+      const hasMajor = Hand.countSuit(openerHand, 'H') >= 5 || Hand.countSuit(openerHand, 'S') >= 5
+      if (!hasMajor) return false
+      const partner = getPartner(dealer)
+      if (Hand.countMiltonHCP(deal[partner]) < TWO_OVER_ONE_MIN_HCP) return false
+      return true
+    }
+  }
+
+  const NMF_RESPONDER_MIN_HCP = 12
+  const NMF_RESPONDER_MIN_SUIT = 4
+  const NMF_OPENER_MAX_SPADES = 4
+  const NMF_OPENER_MAX_IN_RESPONDER_SUIT = 3
+
+  if (conventionId === 'new_minor_forcing') {
+    return (deal) => {
+      const openerHand = deal[dealer]
+      if (!isBalanced12to14(openerHand)) return false
+      if (Hand.countSuit(openerHand, 'S') > NMF_OPENER_MAX_SPADES) return false
+      const partner = getPartner(dealer)
+      const responderHand = deal[partner]
+      if (Hand.countMiltonHCP(responderHand) < NMF_RESPONDER_MIN_HCP) return false
+      const canBidD = Hand.countSuit(responderHand, 'D') >= NMF_RESPONDER_MIN_SUIT
+      const canBidH = Hand.countSuit(responderHand, 'H') >= NMF_RESPONDER_MIN_SUIT
+      const canBidS = Hand.countSuit(responderHand, 'S') >= NMF_RESPONDER_MIN_SUIT
+      const openerNoFitD = Hand.countSuit(openerHand, 'D') <= NMF_OPENER_MAX_IN_RESPONDER_SUIT
+      const openerNoFitH = Hand.countSuit(openerHand, 'H') <= NMF_OPENER_MAX_IN_RESPONDER_SUIT
+      const openerNoFitS = Hand.countSuit(openerHand, 'S') <= NMF_OPENER_MAX_IN_RESPONDER_SUIT
+      const canBidWithNoFit = (canBidD && openerNoFitD) || (canBidH && openerNoFitH) || (canBidS && openerNoFitS)
+      return canBidWithNoFit
+    }
+  }
+
+  const FOURTH_SUIT_MIN_HCP = 12
+
+  if (conventionId === 'fourth_suit_forcing') {
+    return (deal) => {
+      const openerHand = deal[dealer]
+      if (Hand.countMiltonHCP(openerHand) < FOURTH_SUIT_MIN_HCP) return false
+      if (isBalanced(openerHand)) return false
+      const partner = getPartner(dealer)
+      if (Hand.countMiltonHCP(deal[partner]) < FOURTH_SUIT_MIN_HCP) return false
+      return true
     }
   }
 
