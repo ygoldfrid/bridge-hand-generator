@@ -837,12 +837,12 @@ export default function BridgeHandGenerator() {
         <h2 className="result-title">Preview Boards</h2>
         {generatedBoards.length === 0 ? (
           <p className="result-intro result-empty">
-            No boards yet. Set conditions and click &quot;Add boards&quot; to generate. When you have enough, remove any you don&apos;t want and download.
+            No boards yet. Set conditions and click &quot;Add boards&quot; to generate.
           </p>
         ) : (
           <>
             <p className="result-intro">
-              {generatedBoards.length} board(s) total. Remove any you don&apos;t want, rearrange the order if needed, use <strong>Edit Cards</strong> in the center of a board to swap cards, then download.
+              {generatedBoards.length} board(s) total. Remove any you don&apos;t want, rearrange the order or manually edit them. When you are done download or print.
             </p>
             <div className="result-actions result-actions--top">
               <button type="button" onClick={handleDownload} className="btn btn-download">
