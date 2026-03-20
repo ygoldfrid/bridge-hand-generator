@@ -1,0 +1,297 @@
+.board-edit-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  box-sizing: border-box;
+}
+
+.board-edit-modal {
+  background: #f1f5f9;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  width: min(100%, calc(100vw - 1rem));
+  max-width: min(980px, calc(100vw - 1rem));
+  max-height: min(92vh, 900px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.board-edit-modal-header {
+  position: relative;
+  padding: 0.65rem 2.25rem 0.55rem 0.85rem;
+  background: linear-gradient(135deg, #2e6b45 0%, #3d8b55 100%);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.board-edit-modal-title {
+  margin: 0;
+  font-size: 1.26rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.board-edit-modal-hint {
+  margin: 0.35rem 0 0 0;
+  font-size: 0.9rem;
+  opacity: 0.95;
+  line-height: 1.4;
+}
+
+.board-edit-modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.board-edit-modal-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.board-edit-modal-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  /* Middle row grows so the center strip matches West/East height top-to-bottom */
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    ". north ."
+    "west center east"
+    ". south .";
+  gap: 10px;
+  padding: 0.8rem 0.65rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.board-edit-modal-center {
+  grid-area: center;
+  background: rgba(46, 107, 69, 0.12);
+  border-radius: 6px;
+  min-height: 0;
+  align-self: stretch;
+  justify-self: stretch;
+  width: 100%;
+}
+
+.board-edit-hand-north {
+  grid-area: north;
+}
+
+.board-edit-hand-south {
+  grid-area: south;
+}
+
+.board-edit-hand-west {
+  grid-area: west;
+}
+
+.board-edit-hand-east {
+  grid-area: east;
+}
+
+.board-edit-hand {
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.58rem 0.52rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* West/East fill the middle row height with the center strip */
+.board-edit-hand-west,
+.board-edit-hand-east {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.board-edit-hand-west .board-edit-hand-chips,
+.board-edit-hand-east .board-edit-hand-chips {
+  flex: 1;
+  min-height: 0;
+}
+
+.board-edit-hand--dealer {
+  background: #fef9c3;
+  border-color: #eab308;
+  box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.35);
+}
+
+.board-edit-hand-header {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 0.4rem;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.board-edit-hand-hcp {
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 0.3rem;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.board-edit-hand-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.board-edit-suit-row {
+  min-width: 0;
+}
+
+.board-edit-suit-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.26rem;
+  min-width: 0;
+}
+
+/* Compact chips: rank + suit inline to save horizontal space */
+.card-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.24rem 0.42rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  line-height: 1;
+  box-sizing: border-box;
+  transition: transform 0.08s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.card-chip-inner {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.12rem;
+  white-space: nowrap;
+}
+
+.card-chip:hover {
+  transform: translateY(-1px);
+  border-color: #94a3b8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.card-chip--selected {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.4);
+  background: linear-gradient(180deg, #ede9fe 0%, #ddd6fe 100%);
+}
+
+.card-chip-rank {
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.card-chip-suit {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.card-chip--red .card-chip-rank,
+.card-chip--red .card-chip-suit {
+  color: #b91c1c;
+}
+
+.card-chip--black .card-chip-rank,
+.card-chip--black .card-chip-suit {
+  color: #1a1a1a;
+}
+
+.board-edit-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.board-edit-modal-footer .btn {
+  margin: 0;
+  padding: 0.5rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.board-edit-btn-cancel {
+  background: #fff;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.board-edit-btn-cancel:hover {
+  background: #f1f5f9;
+}
+
+.board-edit-btn-done {
+  background: #2e6b45;
+  color: #fff;
+  border-color: #2e6b45;
+}
+
+.board-edit-btn-done:hover {
+  background: #25603a;
+  border-color: #25603a;
+}
+
+@media (max-width: 520px) {
+  .board-edit-modal-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .board-edit-modal-center {
+    display: none;
+  }
+
+  .card-chip-rank {
+    font-size: 0.88rem;
+  }
+
+  .card-chip-suit {
+    font-size: 0.98rem;
+  }
+}

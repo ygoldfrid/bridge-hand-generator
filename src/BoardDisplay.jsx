@@ -23,7 +23,18 @@ const VULN_OPTIONS = [
   { value: 'both', label: 'Both' },
 ]
 
-export default function BoardDisplay({ deal, boardNum, displayIndex, handTypeLabel, vulnerability = 'none', onDelete, rearrangeMode = false, staticVulnSelector = false, onVulnerabilityChange }) {
+export default function BoardDisplay({
+  deal,
+  boardNum,
+  displayIndex,
+  handTypeLabel,
+  vulnerability = 'none',
+  onDelete,
+  rearrangeMode = false,
+  onEdit,
+  staticVulnSelector = false,
+  onVulnerabilityChange,
+}) {
   const dealer = Board.calculateDealer(boardNum)
 
   const hands = [
@@ -78,7 +89,22 @@ export default function BoardDisplay({ deal, boardNum, displayIndex, handTypeLab
         <span className={`vuln-dealer-d vuln-d-${dealer.toLowerCase()}`}>D</span>
       </div>
       <div className="board-display-table">
-        <div className="board-display-center" aria-hidden="true" />
+        <div
+          className={`board-display-center${!rearrangeMode && onEdit ? ' board-display-center--interactive' : ''}`}
+          aria-hidden={!(onEdit && !rearrangeMode)}
+        >
+          {!rearrangeMode && onEdit && (
+            <button
+              type="button"
+              className="board-display-center-edit"
+              onClick={onEdit}
+              title="Edit cards on this board"
+              aria-label="Edit cards on this board"
+            >
+              ✏️ Edit Cards
+            </button>
+          )}
+        </div>
         {hands.map(({ compass, label, className }) => {
           const hcp = Hand.countMiltonHCP(deal[compass])
           return (

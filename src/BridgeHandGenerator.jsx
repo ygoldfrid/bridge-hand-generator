@@ -5,7 +5,9 @@ import { boardsToLinFile } from './lin'
 import { printBoardsPdf } from './pdfExport'
 import { CONVENTION_OPTIONS, getConventionFilter, getHandTypeShortLabel } from './conventions'
 import BoardDisplay from './BoardDisplay'
+import BoardEditModal from './BoardEditModal'
 import BridgeLogo from './BridgeLogo'
+import { isValidDeal } from './dealEdit'
 import './BridgeHandGenerator.css'
 
 const COMPASS = ['N', 'S', 'E', 'W']
@@ -99,6 +101,8 @@ export default function BridgeHandGenerator() {
   const [dragSourceIndex, setDragSourceIndex] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
+  /** { storageIndex, displayNum } so the modal title matches the preview list order */
+  const [editingBoard, setEditingBoard] = useState(null)
 
   const getVulnerabilityForNewBoard = (boardNum) => {
     if (vulnMode === 'rotating') return standardVulnerability(boardNum)
@@ -370,6 +374,12 @@ export default function BridgeHandGenerator() {
   }
 
   const handleDeleteBoard = (index) => {
+    setEditingBoard((cur) => {
+      if (cur == null) return cur
+      if (cur.storageIndex === index) return null
+      if (cur.storageIndex > index) return { ...cur, storageIndex: cur.storageIndex - 1 }
+      return cur
+    })
     setGeneratedBoards((prev) =>
       prev
         .filter((_, i) => i !== index)
@@ -386,6 +396,7 @@ export default function BridgeHandGenerator() {
     setRearrangeMode(false)
     setDragSourceIndex(null)
     setDragOverIndex(null)
+    setEditingBoard(null)
   }
 
   const setRearrangeModeWithDrag = (value) => {
@@ -398,6 +409,7 @@ export default function BridgeHandGenerator() {
 
   const handleReorderBoards = (sourceIndex, targetIndex) => {
     if (sourceIndex === targetIndex) return
+    setEditingBoard(null)
     setGeneratedBoards((prev) => {
       const reordered = [...prev]
       const [removed] = reordered.splice(sourceIndex, 1)
@@ -420,6 +432,13 @@ export default function BridgeHandGenerator() {
     if (generatedBoards.length === 0) return
     const content = boardsToLinFile(generatedBoards)
     downloadLin(content, 'bridge_hands.lin')
+  }
+
+  const handleSaveBoardDeal = (boardIndex, newDeal) => {
+    if (!isValidDeal(newDeal)) return
+    setGeneratedBoards((prev) =>
+      prev.map((b, i) => (i === boardIndex ? { ...b, deal: newDeal } : b))
+    )
   }
 
   const handlePrintPdf = async () => {
@@ -823,7 +842,7 @@ export default function BridgeHandGenerator() {
         ) : (
           <>
             <p className="result-intro">
-              {generatedBoards.length} board(s) total. Remove any you don&apos;t want, rearrange the order if needed, then download.
+              {generatedBoards.length} board(s) total. Remove any you don&apos;t want, rearrange the order if needed, use <strong>Edit Cards</strong> in the center of a board to swap cards, then download.
             </p>
             <div className="result-actions result-actions--top">
               <button type="button" onClick={handleDownload} className="btn btn-download">
@@ -856,16 +875,26 @@ export default function BridgeHandGenerator() {
               return (rearrangeMode ? displayOrder : identity).map((originalIndex, displayPos) => {
                 const board = generatedBoards[originalIndex]
                 const isDropTarget = dragOverIndex === displayPos
+                const shortLabel = getHandTypeShortLabel(board.handType)
                 const boardEl = (
                   <BoardDisplay
                     key={originalIndex}
                     deal={board.deal}
                     boardNum={board.boardNum}
                     displayIndex={displayPos + 1}
-                    handTypeLabel={getHandTypeShortLabel(board.handType)}
+                    handTypeLabel={shortLabel}
                     vulnerability={board.vulnerability}
                     onDelete={rearrangeMode ? undefined : () => handleDeleteBoard(originalIndex)}
                     rearrangeMode={rearrangeMode}
+                    onEdit={
+                      rearrangeMode
+                        ? undefined
+                        : () =>
+                            setEditingBoard({
+                              storageIndex: originalIndex,
+                              displayNum: displayPos + 1,
+                            })
+                    }
                     staticVulnSelector={vulnMode === 'fixed'}
                     onVulnerabilityChange={vulnMode === 'fixed' ? (v) => handleSetBoardVulnerability(originalIndex, v) : undefined}
                   />
@@ -928,6 +957,21 @@ export default function BridgeHandGenerator() {
           </>
         )}
       </div>
+
+      {editingBoard != null && generatedBoards[editingBoard.storageIndex] && (
+        <BoardEditModal
+          key={editingBoard.storageIndex}
+          deal={generatedBoards[editingBoard.storageIndex].deal}
+          boardNum={generatedBoards[editingBoard.storageIndex].boardNum}
+          title={(() => {
+            const b = generatedBoards[editingBoard.storageIndex]
+            const label = getHandTypeShortLabel(b.handType)
+            return `Edit board ${editingBoard.displayNum}${label ? ` — ${label}` : ''}`
+          })()}
+          onClose={() => setEditingBoard(null)}
+          onSave={(newDeal) => handleSaveBoardDeal(editingBoard.storageIndex, newDeal)}
+        />
+      )}
     </div>
   )
 }
