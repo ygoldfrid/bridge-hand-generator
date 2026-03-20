@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { generate } from '@bridge-tools/generator'
 import { Hand, Board } from '@bridge-tools/core'
 import { boardsToLinFile } from './lin'
-import { exportBoardsToPdf } from './pdfExport'
+import { printBoardsPdf } from './pdfExport'
 import { CONVENTION_OPTIONS, getConventionFilter, getHandTypeShortLabel } from './conventions'
 import BoardDisplay from './BoardDisplay'
 import BridgeLogo from './BridgeLogo'
@@ -422,13 +422,16 @@ export default function BridgeHandGenerator() {
     downloadLin(content, 'bridge_hands.lin')
   }
 
-  const handleDownloadPdf = async () => {
+  const handlePrintPdf = async () => {
     if (generatedBoards.length === 0) return
     setPdfLoading(true)
     try {
-      await exportBoardsToPdf(generatedBoards)
+      await printBoardsPdf(generatedBoards)
     } catch (e) {
-      setError(e?.message || 'PDF download failed. If using a dev server, ensure /fonts/DejaVuSans.ttf is available.')
+      setError(
+        e?.message ||
+          'Could not open print dialog. If using a dev server, ensure /fonts/DejaVuSans.ttf is available.'
+      )
     } finally {
       setPdfLoading(false)
     }
@@ -824,13 +827,13 @@ export default function BridgeHandGenerator() {
             </p>
             <div className="result-actions result-actions--top">
               <button type="button" onClick={handleDownload} className="btn btn-download">
-                Download LIN
+                📄 Download LIN
               </button>
-              <button type="button" onClick={handleDownloadPdf} disabled={pdfLoading} className="btn btn-download">
-                {pdfLoading ? 'Preparing PDF…' : 'Download PDF'}
+              <button type="button" onClick={handlePrintPdf} disabled={pdfLoading} className="btn btn-download">
+                {pdfLoading ? '🖨️ Preparing PDF…' : '🖨️ Print PDF'}
               </button>
               <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
-                {rearrangeMode ? 'Done rearranging' : 'Rearrange boards'}
+                {rearrangeMode ? '🤚 Done rearranging' : '🤚 Rearrange boards'}
               </button>
               <button type="button" onClick={handleClearAll} className="btn btn-clear">
                 Clear all boards
@@ -910,13 +913,13 @@ export default function BridgeHandGenerator() {
           </div>
           <div className="result-actions">
               <button type="button" onClick={handleDownload} className="btn btn-download">
-                Download LIN
+                📄 Download LIN
               </button>
-              <button type="button" onClick={handleDownloadPdf} disabled={pdfLoading} className="btn btn-download">
-                {pdfLoading ? 'Preparing PDF…' : 'Download PDF'}
+              <button type="button" onClick={handlePrintPdf} disabled={pdfLoading} className="btn btn-download">
+                {pdfLoading ? '🖨️ Preparing PDF…' : '🖨️ Print PDF'}
               </button>
               <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
-                {rearrangeMode ? 'Done rearranging' : 'Rearrange boards'}
+                {rearrangeMode ? '🤚 Done rearranging' : '🤚 Rearrange boards'}
               </button>
               <button type="button" onClick={handleClearAll} className="btn btn-clear">
                 Clear all boards

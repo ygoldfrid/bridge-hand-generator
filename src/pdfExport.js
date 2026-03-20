@@ -1,9 +1,10 @@
 /**
- * Export bridge boards to a simple black-and-white PDF for printing.
+ * Build a simple black-and-white PDF of bridge boards for printing.
  * Boards stacked in a grid (4×6 per page) to reduce horizontal white space.
  * Cross layout: top-left dealer/vuln, top-center North, top-right board#,
  * center-left West, center-right East, bottom-center South.
  * Uses DejaVu Sans font so suit symbols (♠ ♥ ♦ ♣) render correctly.
+ * Opens the system print dialog in the same page context (no new tab).
  */
 
 import { jsPDF } from 'jspdf'
@@ -58,10 +59,58 @@ async function ensureFont(doc) {
 }
 
 /**
- * @param {{ deal: import('@bridge-tools/core').Types.Deal; boardNum: number; vulnerability: string }[]} boards
- * @returns {Promise<void>} resolves when PDF is downloaded
+ * Print the PDF via a hidden iframe so no new tab is opened.
  */
-export async function exportBoardsToPdf(boards) {
+function openPdfForPrint(doc) {
+  const blob = doc.output('blob')
+  const url = URL.createObjectURL(blob)
+
+  return new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe')
+    iframe.style.position = 'fixed'
+    iframe.style.right = '0'
+    iframe.style.bottom = '0'
+    iframe.style.width = '0'
+    iframe.style.height = '0'
+    iframe.style.border = '0'
+    iframe.setAttribute('aria-hidden', 'true')
+    iframe.src = url
+
+    let printed = false
+    const cleanup = () => {
+      URL.revokeObjectURL(url)
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe)
+    }
+    const tryPrint = () => {
+      if (printed) return
+      printed = true
+      try {
+        const w = iframe.contentWindow
+        if (!w) throw new Error('Print frame failed to initialize.')
+        w.focus()
+        w.print()
+      } catch (e) {
+        cleanup()
+        reject(e)
+        return
+      }
+      resolve()
+      const w = iframe.contentWindow
+      if (w) w.addEventListener('afterprint', cleanup, { once: true })
+      setTimeout(cleanup, 60000)
+    }
+
+    iframe.addEventListener('load', () => setTimeout(tryPrint, 350), { once: true })
+    document.body.appendChild(iframe)
+    setTimeout(tryPrint, 1500)
+  })
+}
+
+/**
+ * @param {{ deal: import('@bridge-tools/core').Types.Deal; boardNum: number; vulnerability: string }[]} boards
+ * @returns {Promise<void>} resolves after the print dialog is invoked
+ */
+export async function printBoardsPdf(boards) {
   if (!boards || boards.length === 0) return
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
@@ -146,5 +195,5 @@ export async function exportBoardsToPdf(boards) {
     drawHand(deal.S, cellX + cellW3 + pad3, cellY + 2 * cellH3 + pad3, 'left')
   })
 
-  doc.save('bridge_hands.pdf')
+  await openPdfForPrint(doc)
 }
