@@ -535,6 +535,56 @@
   opacity: 0.9;
 }
 
+/* Touch reorder (narrow viewports): ↑↓ buttons; class set from JS with matchMedia */
+.board-reorder-touch {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.board-reorder-btn {
+  flex: 1;
+  min-height: 2.75rem;
+  margin: 0 !important;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: var(--bridge-white);
+  color: var(--bridge-green);
+  border: 2px solid var(--bridge-green);
+  cursor: pointer;
+}
+
+.board-reorder-btn:hover:not(:disabled) {
+  background: var(--bridge-green-soft);
+}
+
+.board-reorder-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.board-reorder-touch-hint {
+  font-size: 0.9rem;
+  color: var(--bridge-black);
+  opacity: 0.9;
+  margin: 0 0 0.85rem 0;
+  line-height: 1.45;
+}
+
+.board-draggable-wrapper--touch {
+  cursor: default;
+}
+
+.board-draggable-wrapper--touch:active {
+  cursor: default;
+}
+
 .board-draggable-wrapper.board-drop-target {
   outline: 3px dashed var(--bridge-green);
   outline-offset: 2px;

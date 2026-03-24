@@ -299,10 +299,21 @@
   .board-edit-modal-table {
     display: flex;
     flex-direction: column;
+    -webkit-overflow-scrolling: touch;
   }
 
   .board-edit-modal-center {
     display: none;
+  }
+
+  /*
+   * Column flex + overflow:hidden on hands lets items shrink to zero min-height,
+   * clipping lower suit rows. Don’t shrink hands; allow overflow so all suits show.
+   */
+  .board-edit-modal-table .board-edit-hand {
+    flex-shrink: 0;
+    overflow: visible;
+    width: 100%;
   }
 
   .card-chip-rank {

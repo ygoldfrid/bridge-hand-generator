@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { generate } from '@bridge-tools/generator'
 import { Hand, Board } from '@bridge-tools/core'
 import { boardsToLinFile } from './lin'
@@ -103,6 +103,16 @@ export default function BridgeHandGenerator() {
   const [pdfLoading, setPdfLoading] = useState(false)
   /** { storageIndex, displayNum } so the modal title matches the preview list order */
   const [editingBoard, setEditingBoard] = useState(null)
+  /** Matches mobile CSS breakpoint: use ↑↓ to reorder instead of drag-and-drop */
+  const [narrowViewport, setNarrowViewport] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    const apply = () => setNarrowViewport(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
 
   const getVulnerabilityForNewBoard = (boardNum) => {
     if (vulnMode === 'rotating') return standardVulnerability(boardNum)
@@ -420,6 +430,16 @@ export default function BridgeHandGenerator() {
         vulnerability: vulnMode === 'rotating' ? standardVulnerability(i + 1) : board.vulnerability,
       }))
     })
+  }
+
+  const handleMoveBoardUp = (index) => {
+    if (index <= 0) return
+    handleReorderBoards(index, index - 1)
+  }
+
+  const handleMoveBoardDown = (index) => {
+    if (index >= generatedBoards.length - 1) return
+    handleReorderBoards(index, index + 1)
   }
 
   const handleSetBoardVulnerability = (index, value) => {
@@ -859,6 +879,11 @@ export default function BridgeHandGenerator() {
                 Clear all boards
               </button>
             </div>
+            {rearrangeMode && narrowViewport && (
+              <p className="board-reorder-touch-hint">
+                Use <strong>Move up</strong> / <strong>Move down</strong> on each board to change order.
+              </p>
+            )}
             <div className={`boards-list ${rearrangeMode ? 'boards-list--rearrange' : ''}`}>
             {(() => {
               const n = generatedBoards.length
@@ -904,9 +929,10 @@ export default function BridgeHandGenerator() {
                 return (
                   <div
                     key={originalIndex}
-                    className={`board-draggable-wrapper${isDropTarget ? ' board-drop-target' : ''}`}
-                    draggable
+                    className={`board-draggable-wrapper${isDropTarget ? ' board-drop-target' : ''}${narrowViewport ? ' board-draggable-wrapper--touch' : ''}`}
+                    draggable={!narrowViewport}
                     onDragStart={(e) => {
+                      if (narrowViewport) return
                       e.dataTransfer.setData('text/plain', String(originalIndex))
                       e.dataTransfer.effectAllowed = 'move'
                       e.currentTarget.classList.add('board-dragging')
@@ -918,11 +944,13 @@ export default function BridgeHandGenerator() {
                       setDragOverIndex(null)
                     }}
                     onDragOver={(e) => {
+                      if (narrowViewport) return
                       e.preventDefault()
                       e.dataTransfer.dropEffect = 'move'
                       setDragOverIndex(displayPos)
                     }}
                     onDrop={(e) => {
+                      if (narrowViewport) return
                       e.preventDefault()
                       const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10)
                       const targetIndex = displayPos
@@ -932,9 +960,33 @@ export default function BridgeHandGenerator() {
                     }}
                     data-board-index={originalIndex}
                   >
-                    <div className="board-drag-overlay" aria-hidden="true">
-                      <span className="board-drag-hand-icon" role="img" aria-hidden="true">&#128400;</span>
-                    </div>
+                    {narrowViewport && (
+                      <div className="board-reorder-touch" role="group" aria-label={`Reorder board ${displayPos + 1}`}>
+                        <button
+                          type="button"
+                          className="btn board-reorder-btn"
+                          disabled={originalIndex === 0}
+                          onClick={() => handleMoveBoardUp(originalIndex)}
+                          aria-label={`Move board ${displayPos + 1} up in the list`}
+                        >
+                          ↑ Move up
+                        </button>
+                        <button
+                          type="button"
+                          className="btn board-reorder-btn"
+                          disabled={originalIndex >= n - 1}
+                          onClick={() => handleMoveBoardDown(originalIndex)}
+                          aria-label={`Move board ${displayPos + 1} down in the list`}
+                        >
+                          ↓ Move down
+                        </button>
+                      </div>
+                    )}
+                    {!narrowViewport && (
+                      <div className="board-drag-overlay" aria-hidden="true">
+                        <span className="board-drag-hand-icon" role="img" aria-hidden="true">&#128400;</span>
+                      </div>
+                    )}
                     {isDropTarget ? <div className="board-drop-placeholder" aria-hidden="true" /> : boardEl}
                   </div>
                 )
