@@ -161,7 +161,8 @@ export async function printBoardsPdf(boards) {
   const pad = 1.8
   const lineH = 2.6
   const fontSmall = 6
-  const fontBoardNum = 10
+  /** Emphasis without bold (only normal face is embedded — bold broke Unicode suits) */
+  const fontBoardNum = 12
 
   const gridRight = margin + COLS * columnWidth
   const drawGrid = () => {
@@ -220,9 +221,7 @@ export async function printBoardsPdf(boards) {
     drawHand(deal.N, cellX + cellW3 + pad3, cellY + pad3, 'left')
 
     doc.setFontSize(fontBoardNum)
-    doc.setFont(FONT_NAME, 'bold')
     doc.text(String(boardNum), cellX + 2 * cellW3 + cellW3 / 2, cellY + cellH3 / 2, { align: 'center' })
-    doc.setFont(FONT_NAME, 'normal')
     doc.setFontSize(fontSmall)
 
     drawHand(deal.W, cellX + pad3, cellY + cellH3 + pad3, 'left')
