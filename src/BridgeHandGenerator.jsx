@@ -101,6 +101,8 @@ export default function BridgeHandGenerator() {
   const [dragSourceIndex, setDragSourceIndex] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
+  /** Shown after mobile PDF opens in a new tab (Share / print from browser) */
+  const [pdfNewTabHint, setPdfNewTabHint] = useState(null)
   /** { storageIndex, displayNum } so the modal title matches the preview list order */
   const [editingBoard, setEditingBoard] = useState(null)
   /** Matches mobile CSS breakpoint: use ↑↓ to reorder instead of drag-and-drop */
@@ -287,6 +289,7 @@ export default function BridgeHandGenerator() {
   const handleGenerate = (e) => {
     e.preventDefault()
     setError(null)
+    setPdfNewTabHint(null)
     setGenerating(true)
 
     const num = Math.max(1, Math.min(32, Number(numBoards) || 3))
@@ -407,6 +410,7 @@ export default function BridgeHandGenerator() {
     setDragSourceIndex(null)
     setDragOverIndex(null)
     setEditingBoard(null)
+    setPdfNewTabHint(null)
   }
 
   const setRearrangeModeWithDrag = (value) => {
@@ -464,10 +468,19 @@ export default function BridgeHandGenerator() {
 
   const handlePrintPdf = async () => {
     if (generatedBoards.length === 0) return
+    setPdfNewTabHint(null)
     setPdfLoading(true)
     try {
-      await printBoardsPdf(generatedBoards)
+      const { openedInNewTab } = await printBoardsPdf(generatedBoards)
+      setError(null)
+      if (openedInNewTab) {
+        setPdfNewTabHint(
+          'PDF opened in a new tab. Use Share (iOS) or the browser’s ⋮ menu → Print (Android) to print.'
+        )
+        window.setTimeout(() => setPdfNewTabHint(null), 14_000)
+      }
     } catch (e) {
+      setPdfNewTabHint(null)
       setError(
         e?.message ||
           'Could not open print dialog. If using a dev server, ensure /fonts/DejaVuSans.ttf is available.'
@@ -853,6 +866,7 @@ export default function BridgeHandGenerator() {
       </form>
 
       {error && <p className="error">{error}</p>}
+      {pdfNewTabHint && !error && <p className="pdf-new-tab-hint" role="status">{pdfNewTabHint}</p>}
 
       <div className="result">
         <h2 className="result-title">Preview Boards</h2>

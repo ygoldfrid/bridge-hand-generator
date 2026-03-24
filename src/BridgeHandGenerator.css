@@ -404,6 +404,16 @@
   font-weight: 500;
 }
 
+.pdf-new-tab-hint {
+  color: var(--bridge-green);
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bridge-green-soft);
+  border-radius: 10px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 /* Result area: wide enough for 4 boards without horizontal scroll */
 .result {
   margin-top: 1.75rem;

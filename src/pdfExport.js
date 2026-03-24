@@ -4,7 +4,10 @@
  * Cross layout: top-left dealer/vuln, top-center North, top-right board#,
  * center-left West, center-right East, bottom-center South.
  * Uses DejaVu Sans font so suit symbols (♠ ♥ ♦ ♣) render correctly.
- * Opens the system print dialog in the same page context (no new tab).
+ *
+ * Wide viewports: hidden iframe + print() (same page).
+ * Narrow (≤639px): open PDF in a new tab — mobile browsers block iframe.print()
+ * on blob PDFs; user prints via Share (iOS) or the PDF viewer (Android).
  */
 
 import { jsPDF } from 'jspdf'
@@ -39,6 +42,18 @@ const BOARDS_PER_PAGE = COLS * ROWS
 const FONT_NAME = 'DejaVuSans'
 let fontLoaded = false
 
+/** Aligned with app mobile layout; iframe contentWindow.print() fails on many phones */
+const MOBILE_PDF_NEW_TAB_MAX_WIDTH_PX = 639
+
+function shouldOpenPdfInNewTab() {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.matchMedia(`(max-width: ${MOBILE_PDF_NEW_TAB_MAX_WIDTH_PX}px)`).matches
+  } catch {
+    return false
+  }
+}
+
 function arrayBufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -59,7 +74,38 @@ async function ensureFont(doc) {
 }
 
 /**
- * Print the PDF via a hidden iframe so no new tab is opened.
+ * Open PDF in a new tab for printing/sharing (required on most mobile browsers).
+ */
+function openPdfInNewTab(doc) {
+  const blob = doc.output('blob')
+  const url = URL.createObjectURL(blob)
+  const revokeLater = () => {
+    setTimeout(() => URL.revokeObjectURL(url), 120_000)
+  }
+
+  try {
+    const win = window.open(url, '_blank', 'noopener,noreferrer')
+    if (win) {
+      revokeLater()
+      return Promise.resolve()
+    }
+  } catch {
+    /* fall through */
+  }
+
+  const a = document.createElement('a')
+  a.href = url
+  a.target = '_blank'
+  a.rel = 'noopener noreferrer'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  revokeLater()
+  return Promise.resolve()
+}
+
+/**
+ * Print the PDF via a hidden iframe so no new tab is opened (desktop-style).
  */
 function openPdfForPrint(doc) {
   const blob = doc.output('blob')
@@ -108,10 +154,10 @@ function openPdfForPrint(doc) {
 
 /**
  * @param {{ deal: import('@bridge-tools/core').Types.Deal; boardNum: number; vulnerability: string }[]} boards
- * @returns {Promise<void>} resolves after the print dialog is invoked
+ * @returns {Promise<{ openedInNewTab: boolean }>} `openedInNewTab` when PDF opened in a new tab for Share / print
  */
 export async function printBoardsPdf(boards) {
-  if (!boards || boards.length === 0) return
+  if (!boards || boards.length === 0) return { openedInNewTab: false }
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   await ensureFont(doc)
@@ -195,5 +241,10 @@ export async function printBoardsPdf(boards) {
     drawHand(deal.S, cellX + cellW3 + pad3, cellY + 2 * cellH3 + pad3, 'left')
   })
 
+  if (shouldOpenPdfInNewTab()) {
+    await openPdfInNewTab(doc)
+    return { openedInNewTab: true }
+  }
   await openPdfForPrint(doc)
+  return { openedInNewTab: false }
 }
