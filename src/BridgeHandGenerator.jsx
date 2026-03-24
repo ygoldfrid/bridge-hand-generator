@@ -59,7 +59,7 @@ function hcpInRange(hcp, minVal, maxVal) {
   return true
 }
 
-function downloadLin(content, filename = 'hands.lin') {
+function downloadLin(content, filename = 'bridge-hands.lin') {
   const blob = new Blob([content], { type: 'text/plain' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -101,8 +101,8 @@ export default function BridgeHandGenerator() {
   const [dragSourceIndex, setDragSourceIndex] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
-  /** Shown after mobile PDF opens in a new tab (Share / print from browser) */
-  const [pdfNewTabHint, setPdfNewTabHint] = useState(null)
+  /** Shown after mobile PDF is downloaded (open-with / Files) */
+  const [pdfMobileHint, setPdfMobileHint] = useState(null)
   /** { storageIndex, displayNum } so the modal title matches the preview list order */
   const [editingBoard, setEditingBoard] = useState(null)
   /** Matches mobile CSS breakpoint: use ↑↓ to reorder instead of drag-and-drop */
@@ -289,7 +289,7 @@ export default function BridgeHandGenerator() {
   const handleGenerate = (e) => {
     e.preventDefault()
     setError(null)
-    setPdfNewTabHint(null)
+    setPdfMobileHint(null)
     setGenerating(true)
 
     const num = Math.max(1, Math.min(32, Number(numBoards) || 3))
@@ -410,7 +410,7 @@ export default function BridgeHandGenerator() {
     setDragSourceIndex(null)
     setDragOverIndex(null)
     setEditingBoard(null)
-    setPdfNewTabHint(null)
+    setPdfMobileHint(null)
   }
 
   const setRearrangeModeWithDrag = (value) => {
@@ -455,7 +455,7 @@ export default function BridgeHandGenerator() {
   const handleDownload = () => {
     if (generatedBoards.length === 0) return
     const content = boardsToLinFile(generatedBoards)
-    downloadLin(content, 'bridge_hands.lin')
+    downloadLin(content, 'bridge-hands.lin')
   }
 
   const handleSaveBoardDeal = (boardIndex, newDeal) => {
@@ -468,19 +468,19 @@ export default function BridgeHandGenerator() {
 
   const handlePrintPdf = async () => {
     if (generatedBoards.length === 0) return
-    setPdfNewTabHint(null)
+    setPdfMobileHint(null)
     setPdfLoading(true)
     try {
-      const { openedInNewTab } = await printBoardsPdf(generatedBoards)
+      const { downloadedOnMobile } = await printBoardsPdf(generatedBoards)
       setError(null)
-      if (openedInNewTab) {
-        setPdfNewTabHint(
-          'PDF opened in a new tab. Use Share (iOS) or the browser’s ⋮ menu → Print (Android) to print.'
+      if (downloadedOnMobile) {
+        setPdfMobileHint(
+          'bridge-hands.pdf downloaded. On Android, choose an app to open or print; on iPhone, check Files or the download list.'
         )
-        window.setTimeout(() => setPdfNewTabHint(null), 14_000)
+        window.setTimeout(() => setPdfMobileHint(null), 14_000)
       }
     } catch (e) {
-      setPdfNewTabHint(null)
+      setPdfMobileHint(null)
       setError(
         e?.message ||
           'Could not open print dialog. If using a dev server, ensure /fonts/DejaVuSans.ttf is available.'
@@ -866,7 +866,7 @@ export default function BridgeHandGenerator() {
       </form>
 
       {error && <p className="error">{error}</p>}
-      {pdfNewTabHint && !error && <p className="pdf-new-tab-hint" role="status">{pdfNewTabHint}</p>}
+      {pdfMobileHint && !error && <p className="pdf-mobile-hint" role="status">{pdfMobileHint}</p>}
 
       <div className="result">
         <h2 className="result-title">Preview Boards</h2>
@@ -881,10 +881,14 @@ export default function BridgeHandGenerator() {
             </p>
             <div className="result-actions result-actions--top">
               <button type="button" onClick={handleDownload} className="btn btn-download">
-                📄 Download LIN
+                📄 Download for BBO (lin)
               </button>
               <button type="button" onClick={handlePrintPdf} disabled={pdfLoading} className="btn btn-download">
-                {pdfLoading ? '🖨️ Preparing PDF…' : '🖨️ Print PDF'}
+                {pdfLoading
+                  ? '🖨️ Preparing PDF…'
+                  : narrowViewport
+                    ? '📥 Download for printing (pdf)'
+                    : '🖨️ Print (pdf)'}
               </button>
               <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
                 {rearrangeMode ? '🤚 Done rearranging' : '🤚 Rearrange boards'}
@@ -1009,10 +1013,14 @@ export default function BridgeHandGenerator() {
           </div>
           <div className="result-actions">
               <button type="button" onClick={handleDownload} className="btn btn-download">
-                📄 Download LIN
+                📄 Download for BBO (lin)
               </button>
               <button type="button" onClick={handlePrintPdf} disabled={pdfLoading} className="btn btn-download">
-                {pdfLoading ? '🖨️ Preparing PDF…' : '🖨️ Print PDF'}
+                {pdfLoading
+                  ? '🖨️ Preparing PDF…'
+                  : narrowViewport
+                    ? '📥 Download for printing (pdf)'
+                    : '🖨️ Print (pdf)'}
               </button>
               <button type="button" onClick={() => setRearrangeModeWithDrag(!rearrangeMode)} className="btn btn-rearrange">
                 {rearrangeMode ? '🤚 Done rearranging' : '🤚 Rearrange boards'}

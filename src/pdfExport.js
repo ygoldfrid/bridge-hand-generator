@@ -6,8 +6,8 @@
  * Uses DejaVu Sans font so suit symbols (♠ ♥ ♦ ♣) render correctly.
  *
  * Wide viewports: hidden iframe + print() (same page).
- * Narrow (≤639px): open PDF in a new tab — mobile browsers block iframe.print()
- * on blob PDFs; user prints via Share (iOS) or the PDF viewer (Android).
+ * Narrow (≤639px): trigger a file download — mobile browsers block iframe.print()
+ * on blob PDFs; Android often offers “Open with…”; iOS saves to Files / opens in viewer.
  */
 
 import { jsPDF } from 'jspdf'
@@ -43,12 +43,14 @@ const FONT_NAME = 'DejaVuSans'
 let fontLoaded = false
 
 /** Aligned with app mobile layout; iframe contentWindow.print() fails on many phones */
-const MOBILE_PDF_NEW_TAB_MAX_WIDTH_PX = 639
+const MOBILE_PDF_DOWNLOAD_MAX_WIDTH_PX = 639
 
-function shouldOpenPdfInNewTab() {
+const MOBILE_PDF_FILENAME = 'bridge-hands.pdf'
+
+function shouldDownloadPdfOnMobile() {
   if (typeof window === 'undefined') return false
   try {
-    return window.matchMedia(`(max-width: ${MOBILE_PDF_NEW_TAB_MAX_WIDTH_PX}px)`).matches
+    return window.matchMedia(`(max-width: ${MOBILE_PDF_DOWNLOAD_MAX_WIDTH_PX}px)`).matches
   } catch {
     return false
   }
@@ -74,33 +76,20 @@ async function ensureFont(doc) {
 }
 
 /**
- * Open PDF in a new tab for printing/sharing (required on most mobile browsers).
+ * Save PDF via download (narrow viewports). Triggers Android “Open with…” / save sheet;
+ * avoids new-tab preview and iframe print() cross-origin issues.
  */
-function openPdfInNewTab(doc) {
+function downloadPdfForMobile(doc) {
   const blob = doc.output('blob')
   const url = URL.createObjectURL(blob)
-  const revokeLater = () => {
-    setTimeout(() => URL.revokeObjectURL(url), 120_000)
-  }
-
-  try {
-    const win = window.open(url, '_blank', 'noopener,noreferrer')
-    if (win) {
-      revokeLater()
-      return Promise.resolve()
-    }
-  } catch {
-    /* fall through */
-  }
-
   const a = document.createElement('a')
   a.href = url
-  a.target = '_blank'
+  a.download = MOBILE_PDF_FILENAME
   a.rel = 'noopener noreferrer'
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  revokeLater()
+  setTimeout(() => URL.revokeObjectURL(url), 90_000)
   return Promise.resolve()
 }
 
@@ -154,10 +143,10 @@ function openPdfForPrint(doc) {
 
 /**
  * @param {{ deal: import('@bridge-tools/core').Types.Deal; boardNum: number; vulnerability: string }[]} boards
- * @returns {Promise<{ openedInNewTab: boolean }>} `openedInNewTab` when PDF opened in a new tab for Share / print
+ * @returns {Promise<{ downloadedOnMobile: boolean }>} true when PDF was saved via download (narrow viewport)
  */
 export async function printBoardsPdf(boards) {
-  if (!boards || boards.length === 0) return { openedInNewTab: false }
+  if (!boards || boards.length === 0) return { downloadedOnMobile: false }
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   await ensureFont(doc)
@@ -241,10 +230,10 @@ export async function printBoardsPdf(boards) {
     drawHand(deal.S, cellX + cellW3 + pad3, cellY + 2 * cellH3 + pad3, 'left')
   })
 
-  if (shouldOpenPdfInNewTab()) {
-    await openPdfInNewTab(doc)
-    return { openedInNewTab: true }
+  if (shouldDownloadPdfOnMobile()) {
+    await downloadPdfForMobile(doc)
+    return { downloadedOnMobile: true }
   }
   await openPdfForPrint(doc)
-  return { openedInNewTab: false }
+  return { downloadedOnMobile: false }
 }

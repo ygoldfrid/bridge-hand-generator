@@ -404,7 +404,7 @@
   font-weight: 500;
 }
 
-.pdf-new-tab-hint {
+.pdf-mobile-hint {
   color: var(--bridge-green);
   margin-top: 1rem;
   padding: 0.75rem 1rem;
