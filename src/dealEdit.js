@@ -48,6 +48,38 @@ export function rankOrderIndex(rank) {
   return i === -1 ? 99 : i
 }
 
+/** Display / export order: spades through clubs, high rank first within suit */
+const SUIT_ORDER = ['S', 'H', 'D', 'C']
+
+/**
+ * @param {import('@bridge-tools/core').Types.Card[]} hand
+ * @returns {import('@bridge-tools/core').Types.Card[]}
+ */
+export function sortHandByBridgeOrder(hand) {
+  const bySuit = { S: [], H: [], D: [], C: [] }
+  for (const card of hand) {
+    if (bySuit[card.suit]) bySuit[card.suit].push(card)
+  }
+  for (const s of SUIT_ORDER) {
+    bySuit[s].sort((a, b) => rankOrderIndex(a.rank) - rankOrderIndex(b.rank))
+  }
+  return SUIT_ORDER.flatMap((s) => bySuit[s])
+}
+
+/**
+ * Reorder every seat so preview/PDF/LIN match edit-modal suit ordering.
+ * @param {Deal} deal
+ * @returns {Deal}
+ */
+export function normalizeDeal(deal) {
+  return {
+    N: sortHandByBridgeOrder(deal.N),
+    E: sortHandByBridgeOrder(deal.E),
+    S: sortHandByBridgeOrder(deal.S),
+    W: sortHandByBridgeOrder(deal.W),
+  }
+}
+
 /**
  * @param {string} rank
  */

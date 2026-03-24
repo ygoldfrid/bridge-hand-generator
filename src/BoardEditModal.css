@@ -71,7 +71,7 @@
 .board-edit-modal-table {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-  /* Middle row grows so the center strip matches West/East height top-to-bottom */
+  /* Middle row: center strip can grow; W/E align to start so hands aren’t height-clipped */
   grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
     ". north ."
@@ -107,10 +107,15 @@
 
 .board-edit-hand-west {
   grid-area: west;
+  /* Don’t stretch to the 1fr row — that flex-shrinks the chip area and clips cards */
+  align-self: start;
+  width: 100%;
 }
 
 .board-edit-hand-east {
   grid-area: east;
+  align-self: start;
+  width: 100%;
 }
 
 .board-edit-hand {
@@ -121,21 +126,6 @@
   border: 1px solid #e2e8f0;
   min-width: 0;
   overflow: hidden;
-}
-
-/* West/East fill the middle row height with the center strip */
-.board-edit-hand-west,
-.board-edit-hand-east {
-  min-height: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.board-edit-hand-west .board-edit-hand-chips,
-.board-edit-hand-east .board-edit-hand-chips {
-  flex: 1;
-  min-height: 0;
 }
 
 .board-edit-hand--dealer {

@@ -7,7 +7,7 @@ import { CONVENTION_OPTIONS, getConventionFilter, getHandTypeShortLabel } from '
 import BoardDisplay from './BoardDisplay'
 import BoardEditModal from './BoardEditModal'
 import BridgeLogo from './BridgeLogo'
-import { isValidDeal } from './dealEdit'
+import { isValidDeal, normalizeDeal } from './dealEdit'
 import './BridgeHandGenerator.css'
 
 const COMPASS = ['N', 'S', 'E', 'W']
@@ -436,8 +436,9 @@ export default function BridgeHandGenerator() {
 
   const handleSaveBoardDeal = (boardIndex, newDeal) => {
     if (!isValidDeal(newDeal)) return
+    const deal = normalizeDeal(newDeal)
     setGeneratedBoards((prev) =>
-      prev.map((b, i) => (i === boardIndex ? { ...b, deal: newDeal } : b))
+      prev.map((b, i) => (i === boardIndex ? { ...b, deal } : b))
     )
   }
 
