@@ -6,3 +6,12 @@
   text-align: left;
   box-sizing: border-box;
 }
+
+/* Narrow viewports only — 640px+ unchanged */
+@media (max-width: 639px) {
+  #root {
+    padding: 0.75rem;
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+}

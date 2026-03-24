@@ -557,3 +557,124 @@
     max-width: 1800px;
   }
 }
+
+/* —— Mobile / narrow screens only (max-width 639px); desktop layout unchanged —— */
+@media (max-width: 639px) {
+  .bridge-hand-generator {
+    padding: 0.65rem;
+  }
+
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .bridge-hand-generator h1 {
+    font-size: 1.45rem;
+  }
+
+  .subtitle {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .form-section {
+    padding: 1rem 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-section-title {
+    font-size: 1.02rem;
+  }
+
+  .generator-form label input,
+  .generator-form label select,
+  .generator-form input,
+  .generator-form select {
+    max-width: 100%;
+  }
+
+  .form-section-vulnerability select {
+    max-width: 100%;
+  }
+
+  .generator-form .constraints {
+    padding: 1rem;
+  }
+
+  /* Wide distribution matrix: scroll horizontally instead of squashing */
+  .distribution-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    padding-bottom: 0.4rem;
+    margin-left: -0.35rem;
+    margin-right: -0.35rem;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+    max-width: 100%;
+  }
+
+  .distribution-header-row,
+  .distribution-minmax-row,
+  .distribution-row {
+    min-width: 36rem;
+  }
+
+  .distribution-section--dealer-partner .distribution-header-row,
+  .distribution-section--dealer-partner .distribution-minmax-row,
+  .distribution-section--dealer-partner .distribution-row {
+    min-width: 34rem;
+  }
+
+  .hcp-grid {
+    max-width: 100%;
+  }
+
+  .result {
+    margin-top: 1.25rem;
+    padding: 1rem 1.1rem;
+  }
+
+  .result-title {
+    font-size: 1.1rem;
+  }
+
+  .result-intro {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+
+  /* One column; boards shrink to viewport (no 400px min column) */
+  .boards-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .result-actions,
+  .result-actions--top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .result-actions .btn-clear {
+    margin-left: 0;
+  }
+
+  .result-actions .btn,
+  .result-actions--top .btn {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2.75rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2.75rem;
+  }
+}

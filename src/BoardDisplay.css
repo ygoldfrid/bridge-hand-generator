@@ -303,3 +303,74 @@
   min-width: 0;
   color: #1a1a1a;
 }
+
+/* Narrow screens only — keeps board readable without changing desktop */
+@media (max-width: 639px) {
+  .board-display-header {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.45rem 0.55rem;
+  }
+
+  .board-display-title {
+    font-size: 1.05rem;
+  }
+
+  .board-display-delete {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .board-vuln-square {
+    top: 2.5rem;
+    left: 0.5rem;
+    width: 48px;
+    height: 48px;
+    padding: 6px;
+  }
+
+  .vuln-board-num {
+    font-size: 1.15rem;
+  }
+
+  .board-display-table {
+    padding: 0.65rem;
+    gap: 5px;
+    min-height: 240px;
+  }
+
+  .hand-suits {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .hand-header {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .hand-hcp-banner {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .board-display-hand {
+    padding: 0.4rem 0.45rem;
+  }
+
+  .board-display-center-edit {
+    font-size: 0.72rem;
+    padding: 0.45rem 0.55rem;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    min-height: 44px;
+  }
+
+  .board-display-center--interactive {
+    min-height: 64px;
+    padding: 0.25rem;
+  }
+}
