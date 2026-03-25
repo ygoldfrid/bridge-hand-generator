@@ -49,6 +49,9 @@ export default function BoardDisplay({
     vulnerability === 'ns' ? 'vuln-ns' :
     vulnerability === 'ew' ? 'vuln-ew' : 'vuln-none'
 
+  const vulnExplicitLabel =
+    VULN_OPTIONS.find((o) => o.value === vulnerability)?.label ?? 'None'
+
   return (
     <div className="board-display">
       <header className="board-display-header">
@@ -84,9 +87,13 @@ export default function BoardDisplay({
           )}
         </div>
       </header>
-      <div className={`board-vuln-square ${vulnClass}`}>
-        <span className="vuln-board-num">{displayIndex}</span>
-        <span className={`vuln-dealer-d vuln-d-${dealer.toLowerCase()}`}>D</span>
+      <div className="board-vuln-stack">
+        <div className={`board-vuln-square ${vulnClass}`}>
+          <span className="vuln-board-num">{displayIndex}</span>
+        </div>
+        <div className="board-vuln-explicit" title="Vulnerability">
+          Vul: {vulnExplicitLabel}
+        </div>
       </div>
       <div className="board-display-table">
         <div
@@ -110,7 +117,10 @@ export default function BoardDisplay({
           return (
           <div key={compass} className={`board-display-hand ${className} ${compass === dealer ? 'hand-dealer' : ''}`}>
             <div className="hand-header">
-              <span>{label}</span>
+              <span>
+                {label}
+                {compass === dealer ? ' (D)' : ''}
+              </span>
             </div>
             <div className="hand-suits">
               {handBySuits(deal[compass]).map(({ suit, ranks }) => (

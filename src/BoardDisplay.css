@@ -65,11 +65,32 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Upper-left vulnerability & dealer square: thick border (red = vulnerable side), board number in center, D on dealer side */
-.board-vuln-square {
+/* Upper-left: dealer/vuln square + explicit vulnerability text below */
+.board-vuln-stack {
   position: absolute;
   top: 2.75rem;
   left: 0.75rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 5.5rem;
+}
+
+.board-vuln-explicit {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* Thick border (red = vulnerable side), board number in center */
+.board-vuln-square {
+  position: relative;
   width: 56px;
   height: 56px;
   padding: 8px;
@@ -83,45 +104,11 @@
   justify-content: center;
   color: #1a1a1a;
   font-weight: 700;
-  z-index: 1;
 }
 
 .vuln-board-num {
   font-size: 1.35rem;
   line-height: 1;
-}
-
-/* D on the dealer side: sits in the padding band, clear of the center number */
-.vuln-dealer-d {
-  position: absolute;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  line-height: 1;
-}
-
-.vuln-d-n {
-  top: 3px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.vuln-d-s {
-  bottom: 3px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.vuln-d-e {
-  right: 3px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.vuln-d-w {
-  left: 3px;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 /* Vulnerability border: thick red on vulnerable sides for clear visibility */
@@ -323,12 +310,20 @@
     height: 44px;
   }
 
-  .board-vuln-square {
+  .board-vuln-stack {
     top: 2.5rem;
     left: 0.5rem;
+    max-width: 4.75rem;
+  }
+
+  .board-vuln-square {
     width: 48px;
     height: 48px;
     padding: 6px;
+  }
+
+  .board-vuln-explicit {
+    font-size: 0.62rem;
   }
 
   .vuln-board-num {

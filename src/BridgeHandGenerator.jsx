@@ -14,18 +14,6 @@ const COMPASS = ['N', 'S', 'E', 'W']
 const SUITS = ['S', 'H', 'D', 'C']
 const SUIT_LABELS = { S: '♠', H: '♥', D: '♦', C: '♣' }
 
-const VULN_MODE_OPTIONS = [
-  { value: 'rotating', label: 'Rotating' },
-  { value: 'fixed', label: 'Fixed (choose per board)' },
-]
-
-const VULN_VALUES = [
-  { value: 'none', label: 'None' },
-  { value: 'ns', label: 'N-S' },
-  { value: 'ew', label: 'E-W' },
-  { value: 'both', label: 'Both' },
-]
-
 const HCP_MODE_OPTIONS = [
   { value: 'none', label: 'No HCP conditions' },
   { value: 'per_hand', label: 'HCP per player (N, S, E, W)' },
@@ -39,11 +27,26 @@ const DIST_MODE_OPTIONS = [
 ]
 
 function standardVulnerability(boardNum) {
-  const v = Board.calculateVulnerability(boardNum)
-  if (v === 'NvNv') return 'none'
-  if (v === 'NvV') return 'ns'
-  if (v === 'VNv') return 'ew'
-  return 'both'
+  const BONE_CYCLE = [
+    'none', // 1
+    'ns',   // 2
+    'ew',   // 3
+    'both', // 4
+    'ns',   // 5
+    'ew',   // 6
+    'both', // 7
+    'none', // 8
+    'ew',   // 9
+    'both', // 10
+    'none', // 11
+    'ns',   // 12
+    'both', // 13
+    'none', // 14
+    'ns',   // 15
+    'ew',   // 16
+  ]
+  const index = ((boardNum - 1) % 16 + 16) % 16
+  return BONE_CYCLE[index]
 }
 
 function getPartner(compass) {
@@ -81,8 +84,6 @@ const emptyDealerDistribution = () =>
 
 export default function BridgeHandGenerator() {
   const [numBoards, setNumBoards] = useState(3)
-  const [vulnMode, setVulnMode] = useState('rotating')
-  const [defaultFixedVuln, setDefaultFixedVuln] = useState('none')
   const [convention, setConvention] = useState('none')
   const [hcpMode, setHcpMode] = useState('none')
   const [perHandHcp, setPerHandHcp] = useState(emptyPerHand())
@@ -115,11 +116,6 @@ export default function BridgeHandGenerator() {
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
   }, [])
-
-  const getVulnerabilityForNewBoard = (boardNum) => {
-    if (vulnMode === 'rotating') return standardVulnerability(boardNum)
-    return defaultFixedVuln
-  }
 
   const updatePerHandHcp = (hand, field, value) => {
     setPerHandHcp((prev) => ({
@@ -369,7 +365,7 @@ export default function BridgeHandGenerator() {
           const newBoards = deals.map((deal, i) => ({
             deal,
             boardNum: startNum + i,
-            vulnerability: getVulnerabilityForNewBoard(startNum + i),
+            vulnerability: standardVulnerability(startNum + i),
             handType: convention,
           }))
           return [...prev, ...newBoards]
@@ -399,7 +395,7 @@ export default function BridgeHandGenerator() {
         .map((board, i) => ({
           ...board,
           boardNum: i + 1,
-          vulnerability: vulnMode === 'rotating' ? standardVulnerability(i + 1) : board.vulnerability,
+          vulnerability: standardVulnerability(i + 1),
         }))
     )
   }
@@ -431,7 +427,7 @@ export default function BridgeHandGenerator() {
       return reordered.map((board, i) => ({
         ...board,
         boardNum: i + 1,
-        vulnerability: vulnMode === 'rotating' ? standardVulnerability(i + 1) : board.vulnerability,
+        vulnerability: standardVulnerability(i + 1),
       }))
     })
   }
@@ -444,12 +440,6 @@ export default function BridgeHandGenerator() {
   const handleMoveBoardDown = (index) => {
     if (index >= generatedBoards.length - 1) return
     handleReorderBoards(index, index + 1)
-  }
-
-  const handleSetBoardVulnerability = (index, value) => {
-    setGeneratedBoards((prev) =>
-      prev.map((b, i) => (i === index ? { ...b, vulnerability: value } : b))
-    )
   }
 
   const handleDownload = () => {
@@ -824,41 +814,6 @@ export default function BridgeHandGenerator() {
           </>
         )}
 
-        <label>
-          Vulnerability
-          <select
-            value={vulnMode}
-            onChange={(e) => {
-              const next = e.target.value
-              setVulnMode(next)
-              if (next === 'rotating') {
-                setGeneratedBoards((prev) =>
-                  prev.map((b) => ({ ...b, vulnerability: standardVulnerability(b.boardNum) }))
-                )
-              }
-            }}
-          >
-            {VULN_MODE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {vulnMode === 'fixed' && (
-          <label>
-            Vulnerability
-            <select value={defaultFixedVuln} onChange={(e) => setDefaultFixedVuln(e.target.value)}>
-              {VULN_VALUES.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
         <button type="submit" disabled={generating} className="btn btn-primary">
           {generating ? 'Adding…' : `Add ${numBoards} board${numBoards !== 1 ? 's' : ''}`}
         </button>
@@ -939,8 +894,6 @@ export default function BridgeHandGenerator() {
                               displayNum: displayPos + 1,
                             })
                     }
-                    staticVulnSelector={vulnMode === 'fixed'}
-                    onVulnerabilityChange={vulnMode === 'fixed' ? (v) => handleSetBoardVulnerability(originalIndex, v) : undefined}
                   />
                 )
                 if (!rearrangeMode) return boardEl
