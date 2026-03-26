@@ -87,15 +87,15 @@ export default function BoardDisplay({
           )}
         </div>
       </header>
-      <div className="board-vuln-stack">
-        <div className={`board-vuln-square ${vulnClass}`}>
-          <span className="vuln-board-num">{displayIndex}</span>
-        </div>
-        <div className="board-vuln-explicit" title="Vulnerability">
-          Vul: {vulnExplicitLabel}
-        </div>
-      </div>
       <div className="board-display-table">
+        <div className="board-vuln-stack">
+          <div className={`board-vuln-square ${vulnClass}`}>
+            <span className="vuln-board-num">{displayIndex}</span>
+          </div>
+          <div className="board-vuln-explicit" title="Vulnerability">
+            Vul: {vulnExplicitLabel}
+          </div>
+        </div>
         <div
           className={`board-display-center${!rearrangeMode && onEdit ? ' board-display-center--interactive' : ''}`}
           aria-hidden={!(onEdit && !rearrangeMode)}

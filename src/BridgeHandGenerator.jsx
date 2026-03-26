@@ -485,7 +485,10 @@ export default function BridgeHandGenerator() {
       <header className="app-header">
         <BridgeLogo className="app-logo" size={52} />
         <div className="app-header-text">
-          <h1>Bridge Hand Generator</h1>
+          <div className="title-row">
+            <h1>Bridge Hand Generator</h1>
+            <p className="byline">by flacucho</p>
+          </div>
           <p className="subtitle">Finally, a place to generate the hands you want for your classes. Use them in BBO or in print.</p>
         </div>
       </header>

@@ -65,15 +65,14 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Upper-left: dealer/vuln square + explicit vulnerability text below */
+/* Left table cell: vuln square + explicit vulnerability text below */
 .board-vuln-stack {
-  position: absolute;
-  top: 2.75rem;
-  left: 0.75rem;
-  z-index: 1;
+  grid-area: vuln;
   display: flex;
   flex-direction: column;
   align-items: center;
+  align-self: start;
+  justify-self: start;
   gap: 0.3rem;
   max-width: 5.5rem;
 }
@@ -139,7 +138,7 @@
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
   grid-template-areas:
-    ". north ."
+    "vuln north ."
     "west center east"
     ". south .";
   gap: 6px;
@@ -311,8 +310,6 @@
   }
 
   .board-vuln-stack {
-    top: 2.5rem;
-    left: 0.5rem;
     max-width: 4.75rem;
   }
 

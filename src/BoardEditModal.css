@@ -316,6 +316,23 @@
     width: 100%;
   }
 
+  /* Mobile seat order: North, East, South, West */
+  .board-edit-hand-north {
+    order: 1;
+  }
+
+  .board-edit-hand-east {
+    order: 2;
+  }
+
+  .board-edit-hand-south {
+    order: 3;
+  }
+
+  .board-edit-hand-west {
+    order: 4;
+  }
+
   .card-chip-rank {
     font-size: 0.88rem;
   }
