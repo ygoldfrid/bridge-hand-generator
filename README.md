@@ -1,50 +1,51 @@
 # Bridge Hand Generator
 
-A web app for bridge teachers to generate hands with custom constraints and download a **LIN file** for use in BBO (Bridge Base Online). Built with React and Vite.
+A web app for bridge teachers to generate hands with custom constraints, edit/reorder boards, and export for BBO or print. Built with React and Vite.
 
 ---
 
 ## Features
 
-### Vulnerability
+### Board generation & vulnerability
 
-- **Vulnerability** (top section): choose how vulnerability is set.
-  - **Rotating** — Standard by board number (Board 1 = None, 2 = N-S, 3 = E-W, 4 = Both, then repeats). Dealer and vulnerability stay correct when you add, delete, or reorder boards.
-  - **Fixed** — You set vulnerability per board. New boards use the default you choose in the Boards section; each board can be changed individually in the preview.
+- **Boards to add** — Number of boards (1–32) added each time you click **Add X boards**.
+- **Rotating vulnerability (BONE cycle)** is automatic by board number and is recomputed when boards are added, deleted, or reordered.
+- In each board preview, the vulnerability appears both:
+  - visually (square border),
+  - and explicitly as `Vul: None / N-S / E-W / Both`.
 
-### Boards
+### Convention presets & custom constraints
 
-- **Boards to add** — Number of boards (1–32) added each time you click **Add X boards**. Boards accumulate; new runs add to the existing list.
-- **Vulnerability** (in Boards section) — Shown only when **Fixed** is selected above. Sets the default vulnerability (None, Both, N-S, E-W) for newly added boards.
+- **Hand type / convention presets** are available from the selector.
+- If you choose **None**, you can generate with fully custom filters:
+  - **HCP per player (N, S, E, W)**,
+  - **HCP per Dealer** (dealer + partner, rotating by board),
+  - **Distribution per player** (min/max per suit),
+  - **Distribution per Dealer** (dealer + partner, min/max per suit).
+- HCP and distribution filters can be combined. Tight constraints use higher retry budgets and show a friendly error if no valid deal is found.
 
-### HCP conditions
+### Preview, editing, and board management
 
-- **No HCP conditions** — No point constraints.
-- **HCP per player (N, S, E, W)** — Min/max Milton HCP for each of North, South, East, and West. Leave blank for no constraint.
-- **HCP per Dealer** — Min/max HCP for the dealer and for the dealer’s partner. Dealer rotates by board (1=S, 2=W, 3=N, 4=E), so which pair has the constraint alternates per board.
-
-### Distribution conditions
-
-- **No distribution conditions** — No shape constraints.
-- **Distribution per player (N, S, E, W)** — Min/max cards per suit (♠♥♦♣) for each player. Leave blank for no constraint.
-- **Distribution per Dealer** — Min/max cards per suit for the dealer and for the dealer’s partner (same rotation as HCP per Dealer).
-
-HCP and distribution filters are applied together. Very tight constraints (e.g. 0 cards in a suit) use higher retry limits and may show a friendly error if no deal is found.
+- **Preview** — All generated boards are shown in a grid. Each board shows:
+  - board number and vulnerability (visual + explicit `Vul:` label),
+  - four hands (North, South, East, West) with cards by suit (♠♥♦♣, red/black),
+  - dealer marked in the hand header as `(D)`,
+  - **HCP** for each hand in a banner at the bottom of the hand.
+- **Edit cards (per board)** — Open a board editor modal and swap cards by tapping/clicking two cards.
+- **Delete board** — Remove a board from the list.
+- **Rearrange boards**:
+  - desktop: drag-and-drop,
+  - mobile: up/down controls optimized for touch.
+- **Clear all boards** — Removes every generated board and exits rearrange mode.
 
 ---
 
-## Preview & boards
+## Export options
 
-- **Preview** — All generated boards are shown in a grid. Each board shows:
-  - Board number and vulnerability (None / N-S / E-W / Both) with a visual indicator.
-  - Dealer (D) and four hands (North, South, East, West) with cards by suit (♠♥♦♣, red/black).
-  - **HCP** for each hand in a banner at the bottom of the hand.
-  - **Delete** (×) to remove that board (when not in rearrange mode).
-  - **Per-board vulnerability** — When vulnerability is **Fixed**, a dropdown on each board lets you set None, N-S, E-W, or Both for that board.
-
-- **Download LIN** — Builds a LIN file from the current board list (renumbered 1, 2, 3…) and downloads it (e.g. for BBO).
-- **Rearrange boards** — Toggles rearrange mode. In this mode you can **drag and drop** boards to reorder them. Other boards move as you drag; the drop target appears as an empty white slot. When you finish, click **Done rearranging**. Board numbers and dealer/vulnerability (in Rotating mode) are updated after reorder and after delete.
-- **Clear all boards** — Removes all boards and exits rearrange mode (red button, right-aligned).
+- **Download LIN** — Exports `bridge-hands.lin` for Bridge Base Online.
+- **Print PDF** — Generates a print-ready PDF.
+  - On desktop, opens print flow directly.
+  - On mobile, downloads the PDF and shows guidance for opening/printing.
 
 ---
 
@@ -53,6 +54,7 @@ HCP and distribution filters are applied together. Very tight constraints (e.g. 
 - **React** + **Vite**
 - **@bridge-tools/core** — Types, dealer/vulnerability, HCP, hand utilities
 - **@bridge-tools/generator** — Constrained random deal generation
+- **@react-pdf/renderer** + **pdf-lib** — PDF generation and print flow support
 
 ---
 
