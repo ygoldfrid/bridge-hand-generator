@@ -49,6 +49,8 @@ export default function BoardEditModal({ deal: initialDeal, boardNum, title, onC
   const selectionRef = useRef(null)
 
   useEffect(() => {
+    // Reset modal state when opening a different board; syncs local editor deal to props.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset on initialDeal change
     setDeal(cloneDeal(initialDeal))
     setSelection(null)
     selectionRef.current = null

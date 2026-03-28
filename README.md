@@ -67,6 +67,8 @@ npm run dev
 
 Open the URL shown (e.g. `http://localhost:5173`).
 
+To show **Par** on each preview board, run the PAR API (see `services/par-api/README.md`) and set `VITE_PAR_API_URL` in `.env` (see `.env.example`).
+
 **Build for production:**
 
 ```bash
@@ -74,3 +76,14 @@ npm run build
 ```
 
 Output is in `dist/`.
+
+---
+
+## PAR API scaffold (DDS)
+
+This repo now includes a backend service at `services/par-api` for hosting DDS PAR calculations separately from the Vercel frontend.
+
+- Uses Docker.
+- Pulls DDS source during image build.
+- Exposes `GET /health` and `POST /par` (DDS-backed).
+- Ready to deploy on Render/Fly/Cloud Run as a companion service.

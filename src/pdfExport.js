@@ -60,7 +60,9 @@ function arrayBufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer)
   let binary = ''
   for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
-  return typeof btoa !== 'undefined' ? btoa(binary) : Buffer.from(buffer).toString('base64')
+  if (typeof btoa !== 'undefined') return btoa(binary)
+  const NodeBuffer = globalThis.Buffer
+  return NodeBuffer ? NodeBuffer.from(bytes).toString('base64') : ''
 }
 
 async function ensureFont(doc) {

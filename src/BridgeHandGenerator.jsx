@@ -5,6 +5,8 @@ import { boardsToLinFile } from './lin'
 import { printBoardsPdf } from './pdfExport'
 import { CONVENTION_OPTIONS, getConventionFilter, getHandTypeShortLabel } from './conventions'
 import BoardDisplay from './BoardDisplay'
+
+const PAR_API_BASE_URL = (import.meta.env.VITE_PAR_API_URL || '').trim()
 import BoardEditModal from './BoardEditModal'
 import BridgeLogo from './BridgeLogo'
 import { isValidDeal, normalizeDeal } from './dealEdit'
@@ -886,6 +888,7 @@ export default function BridgeHandGenerator() {
                     displayIndex={displayPos + 1}
                     handTypeLabel={shortLabel}
                     vulnerability={board.vulnerability}
+                    parApiBaseUrl={PAR_API_BASE_URL || undefined}
                     onDelete={rearrangeMode ? undefined : () => handleDeleteBoard(originalIndex)}
                     rearrangeMode={rearrangeMode}
                     onEdit={

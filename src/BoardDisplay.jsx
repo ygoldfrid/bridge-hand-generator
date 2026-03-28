@@ -1,4 +1,6 @@
 import { Board, Hand } from '@bridge-tools/core'
+import BoardParLine from './BoardParLine'
+import { parCacheKey } from './parApi'
 import './BoardDisplay.css'
 
 const SUITS = [
@@ -34,6 +36,8 @@ export default function BoardDisplay({
   onEdit,
   staticVulnSelector = false,
   onVulnerabilityChange,
+  /** Base URL of PAR API (e.g. from VITE_PAR_API_URL). When unset, PAR is not fetched. */
+  parApiBaseUrl,
 }) {
   const dealer = Board.calculateDealer(boardNum)
 
@@ -96,6 +100,17 @@ export default function BoardDisplay({
             Vul: {vulnExplicitLabel}
           </div>
         </div>
+        {parApiBaseUrl ? (
+          <div className="board-par-slot">
+            <BoardParLine
+              key={parCacheKey(boardNum, vulnerability, deal)}
+              parApiBaseUrl={parApiBaseUrl}
+              deal={deal}
+              boardNum={boardNum}
+              vulnerability={vulnerability}
+            />
+          </div>
+        ) : null}
         <div
           className={`board-display-center${!rearrangeMode && onEdit ? ' board-display-center--interactive' : ''}`}
           aria-hidden={!(onEdit && !rearrangeMode)}
